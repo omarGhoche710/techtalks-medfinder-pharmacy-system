@@ -1,0 +1,396 @@
+/* ---------- Reset / base ---------- */
+/** {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+ 
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #111111;
+  background: #ffffff;
+}*/
+
+/* ---------- Page wrapper: two columns ---------- */
+.pageContainer {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif
+}
+
+/* ==========================================================================
+   LEFT COLUMN — form panel
+   ========================================================================== */
+.registerContainer {
+  flex: 1 1 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 576px;
+  margin: 0 auto;
+  padding: 48px;
+  width: 100%;
+  gap: 32px;
+}
+
+/* Heading: "Login to your account" / "Create an account" */
+.header {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.formDescription {
+  font-size: 14px;
+  color: #787878;
+  margin-bottom: 32px;
+}
+
+/* ---------- Form ---------- */
+.authForm {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.formLabel {
+  position: relative;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111111;
+  margin-top: 8px;
+}
+
+.formInput {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid #E0E0E0;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #111111;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.formInput::placeholder {
+  color: #A0A0A0;
+}
+
+.formInput:focus {
+  border-color: #3D5AFE;
+}
+
+.locationCard {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  height: 420px;
+  width: 100%;
+  min-height: 200px;
+  gap: 10px;
+}
+
+.locationCardText {
+  flex: 1 1 40%;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.locationCardMap {
+  position: relative;
+  flex: 1 1 60%;
+  position: relative;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 384px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+.locationCardMap .mapPinIcon {
+  width: 56px;
+  height: 56px;
+}
+
+.locationCardMap .searchBtn {
+  position: absolute;
+  top: 10px;
+  left: 6px;
+  width: 16px dynamic;
+  height: 26px dynamic;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff dynamic;
+  border-radius: 6px;
+  border: 1px solid #D8E3F5 dynamic;
+}
+
+.searchBtn svg {
+  position: absolute;
+  left: 1px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 19px;
+  color: gray;
+  pointer-events: none;
+}
+
+.searchBtn input {
+  padding: 0 1px 0 28px;
+  border: none;
+  border-radius: 6px;
+  height: 26px;
+  font-size: 14px;
+  outline: none;
+}
+
+.searchBtn input::placeholder {
+  color: #A0A0A0;
+  font-size: 14px;
+}
+
+.locationCardMap .locateMeBtn {
+  position: absolute;
+  bottom: 78px;
+  right: 12px;
+  width: 24px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #D8E3F5;
+}
+
+.locationCardMap .fullBtn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #D8E3F5;
+}
+
+.locationCardMap .zoomBtn {
+  position: absolute;
+  bottom: 25px;
+  right: 12px;
+  width: 24px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border-radius: 99px !important;
+  border: 1px solid #D8E3F5;
+}
+
+.locationCardMap :global(.topleft),
+.locationCardMap :global(.bottomright),
+.locationCardMap :global(.topright) {
+  z-index: 1000 !important;
+}
+
+.cardFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.forgotPasswordLink {
+  margin-left: auto;
+  font-size: 13px;
+  color: #3D5AFE;
+  text-decoration: none;
+}
+
+.forgotPasswordLink:hover {
+  text-decoration: underline;
+}
+
+.formCheckbox {
+  width: 15px;
+  height: 15px;
+  min-width: 15px;
+  min-height: 15px;
+  padding: 0;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid #D8E3F5;
+  cursor: pointer;
+}
+
+.formCheckbox[data-state="checked"] {
+  align-items: center;
+  justify-content: center;
+  background-color: #3D5AFE;
+  border-color: #3D5AFE;
+}
+
+.formCheckbox[data-state="checked"] svg {
+  width: 13px;
+  height: 13px;
+  display: block;
+  color: #ffffff;
+}
+
+.formCheckbox:hover {
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.FieldLabel {
+  font-size: 13px;
+  margin-left: 5px;
+}
+
+.formCheckboxGroup{
+  width: 100%;
+  display: flex;
+  margin-bottom: 1px;
+}
+
+.btnPrimary {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 10px;
+  background: #3D5AFE;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  margin-bottom: 30px;
+  margin-top: 1px;
+}
+
+.btnPrimary:hover {
+  background: #3049E0;
+}
+
+.socialLoginContainer{
+  width: 100%;
+  display: flex;
+  gap: 10px;
+}
+
+.btnSocial {
+  flex: 1 1 50%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #E0E0E0;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111111;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  margin-bottom: 16px;
+}
+
+.btnSocial:hover {
+  background: #FAFAFA;
+}
+
+.authSwitch {
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.authSwitchText {
+  text-align: center;
+  font-size: 14px;
+  color: #111111;
+  margin-right: 8px;
+}
+
+.authSwitchLink {
+  width: 70px;
+  height: 30px;
+  color: #3D5AFE;
+  font-weight: 600;
+  text-decoration: none;
+  background: #fafafe;
+  border-radius: 4px;
+  border: 1px solid #D8E3F5;
+}
+
+.authSwitchLink:hover {
+  text-decoration: underline;
+}
+
+/*RIGHT COLUMN — visual / brand panel */
+/*.auth-visual-panel {
+  flex: 1 1 50%;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: 48px;
+  overflow: hidden;
+  border-radius: 32px 0 0 32px;
+  background: radial-gradient(circle at 70% 20%, #E8FBFF 0%, #4FD8F0 22%, #3D6BFF 55%, #6A3DFF 100%);
+}
+ 
+/* Text block anchored to the bottom-left of the visual panel
+.auth-visual-copy {
+  color: #ffffff;
+  max-width: 360px;
+}
+ 
+.auth-visual-copy .visual-title {
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+ 
+.auth-visual-copy .visual-body {
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+}
+ 
+/*Responsive
+@media (max-width: 900px) {
+  .auth-page {
+    flex-direction: column;
+  }
+ 
+  .auth-visual-panel {
+    display: none; /* hide brand panel on small screens, form takes full width 
+  }
+ 
+  .auth-form-panel {
+    max-width: 100%;
+    padding: 32px 24px;
+  }
+ 
+  .social-buttons-row {
+    flex-direction: column;
+  }
+}*/
