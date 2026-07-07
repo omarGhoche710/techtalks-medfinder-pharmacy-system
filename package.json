@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "@iconify-react/ic": "^1.0.2",
+    "@iconify-react/iconamoon": "^1.0.2",
     "@iconify-react/material-icon-theme": "^1.0.17",
+    "@iconify-react/mynaui": "^1.0.2",
+    "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
