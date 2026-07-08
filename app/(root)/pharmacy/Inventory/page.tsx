@@ -2,8 +2,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { columns, medicine } from "@/components/columns"
 import { InventoryTable } from "@/components/InventoryTable"
-import { AddProductButton } from "@/components/PharmPGHeader"
-import { SiteFooter } from "@/components/site-footer"
+import { AddProductButton } from "@/components/PharmaHeader"
+import { SiteFooter } from "@/components/PharmaFooter"
 
 async function getData(): Promise<medicine[]> {
   // Fetch data from your API here.
