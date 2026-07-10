@@ -1,21 +1,37 @@
 "use client"
 import { ColumnDef } from "@tanstack/react-table"
+import { ArrowUpDown } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 import EditIcon from '@iconify-react/mynaui/edit';
+import { Medication } from "@/data/medications";
+import { Button } from "./ui/button";
 
-export type medicine = {
-    code: number,
-    image: string
-    name: string
-    stock: number
-    expiry: Date
-    description: string
-    price: number,
-    discount_percentage: number,
-    discounted_price: number,
-}
 
-export function columns(onEdit: (medicine: medicine) => void): ColumnDef<medicine>[] {
+
+export function columns(onEdit: (Medication: Medication) => void): ColumnDef<Medication>[] {
     return [
+        {
+            id: "select",
+            header: ({ table }) => (
+                <Checkbox
+                    checked={
+                        table.getIsAllPageRowsSelected() ||
+                        (table.getIsSomePageRowsSelected() && "indeterminate")
+                    }
+                    onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                    aria-label="Select all"
+                />
+            ),
+            cell: ({ row }) => (
+                <Checkbox
+                    checked={row.getIsSelected()}
+                    onCheckedChange={(value) => row.toggleSelected(!!value)}
+                    aria-label="Select row"
+                />
+            ),
+            enableSorting: false,
+            enableHiding: false,
+        },
         {
             accessorKey: "code",
             header: "Code",
@@ -26,11 +42,27 @@ export function columns(onEdit: (medicine: medicine) => void): ColumnDef<medicin
         },
         {
             accessorKey: "name",
-            header: "Name",
+            header: ({ column }) => {
+                return (
+                    <Button variant="ghost"
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                        Name
+                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                    </Button>
+                )
+            },
         },
         {
             accessorKey: "stock",
-            header: "Quantity",
+            header: ({ column }) => {
+                return (
+                    <Button variant="ghost"
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                        Quantity
+                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                    </Button>
+                )
+            },
         },
         {
             accessorKey: "price",
@@ -49,7 +81,15 @@ export function columns(onEdit: (medicine: medicine) => void): ColumnDef<medicin
         {
             accessorKey: "expiry",
             //header: "Expiry",
-            header: () => <div className="text-right">Expiry</div>,
+            header: ({ column }) => {
+                return (
+                    <Button variant="ghost"
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+                        Expiry
+                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                    </Button>
+                )
+            },
             cell: ({ row }) => {
                 const expiry: Date = new Date(row.getValue("expiry") as string);
                 const formattedDate = expiry.toLocaleDateString('en-GB');

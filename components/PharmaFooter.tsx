@@ -13,7 +13,7 @@ const columns = [
   },
 ]
 
-export function SiteFooter() {
+export function Footer() {
   return (
     <footer className="mt-120 border-t border-border bg-background px-6 py-12 md:px-10">
       <div className="flex flex-col gap-10 lg:flex-row lg:justify-between">
