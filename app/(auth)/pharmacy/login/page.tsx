@@ -35,7 +35,7 @@ const LoginPage = () => {
     } catch (err) {
       setError('Invalid email or password');
     }
-    router.push('/pharmacy/dashboard');
+    router.push('/pharmacy/Dashboard');
   };
 
   return (

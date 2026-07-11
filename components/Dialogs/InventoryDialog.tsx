@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { medicine } from "@/components/columns"
+import { Medication } from "@/data/medications"
 import { Field, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,7 +20,12 @@ import { useRef } from "react";
 interface InventoryPopProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  medicine: medicine | null
+  medicine: Medication | null
+}
+
+interface AddProductpopProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
 export function InventoryPop({ open, onOpenChange, medicine }: InventoryPopProps) {
@@ -57,6 +62,50 @@ export function InventoryPop({ open, onOpenChange, medicine }: InventoryPopProps
             <DialogClose asChild>
               <Button >Close</Button>
             </DialogClose>
+            <Button type="submit">Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </form>
+    </Dialog>
+  )
+}
+
+export function AddProduct({ open, onOpenChange }: AddProductpopProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <form>
+        <DialogTrigger />
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Create New Medication</DialogTitle>
+            <DialogDescription>
+              Add new medication to your inventory
+            </DialogDescription>
+          </DialogHeader>
+          <FieldGroup>
+            <Field>
+              <Label htmlFor="name-1">Code</Label>
+              <Input required/>
+            </Field>
+            <Field>
+              <Label>Medicine Name</Label>
+              <Input type="string" required/>
+            </Field>
+            <Field>
+              <Label>Quantity</Label>
+              <Input type="number" required/>
+            </Field>
+            <Field>
+              <Label>Price</Label>
+              <Input type="number" required/>
+            </Field>
+            <Field>
+              <Label>Expiry Date</Label>
+              <Input type="date" required/>
+            </Field>
+          </FieldGroup>
+          <DialogFooter>
+            <DialogClose/>
             <Button type="submit">Save changes</Button>
           </DialogFooter>
         </DialogContent>

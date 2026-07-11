@@ -7,6 +7,9 @@ import { Footer } from "./PharmaFooter"
 import { Header } from "./PharmaHeader"
 import { medications as allMedications, Medication } from "@/data/medications";
 import { filterMedications } from "@/lib/searchMedications";
+import {SidebarInset, SidebarProvider, SidebarTrigger} from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/PharmaSidebar"
+
 
 export function Expired({ data }: { data: Medication[] }) {
     const [query, setQuery] = useState("");
@@ -25,16 +28,24 @@ export function Expired({ data }: { data: Medication[] }) {
     })
 
     return (<>
-        <Header medications={allMedications}
-            query={query}
-            onQueryChange={setQuery}
-            onSearch={setSearchQuery} />
-        <DataTable columns={tableColumns} data={data} />
-        <ExpiredPop
-            open={isOpen}
-            onOpenChange={setIsOpen}
-            medicine={selectedRow}
-        />
-        <Footer />
+        <SidebarProvider>
+            <AppSidebar />
+            <SidebarInset className="bg-[#EAF3ED]">
+                <SidebarTrigger className="m-2 text-[#5B6B66] hover:text-[#145C54] hover:bg-[#E1F0EA]" />
+                <Header medications={allMedications}
+                    query={query}
+                    onQueryChange={setQuery}
+                    onSearch={setSearchQuery} />
+                <div className="flex justify-center px-6 py-6">
+                    <DataTable columns={tableColumns} data={data} nameFilter={searchQuery} />
+                </div>
+                <ExpiredPop
+                    open={isOpen}
+                    onOpenChange={setIsOpen}
+                    medicine={selectedRow}
+                />
+                <Footer />
+            </SidebarInset>
+        </SidebarProvider>
     </>)
 }
