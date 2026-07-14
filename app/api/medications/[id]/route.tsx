@@ -1,15 +1,11 @@
-const medications = [
-  { id: "1", name: "Paracetamol", category: "Pain Relief" },
-  { id: "2", name: "Amoxicillin", category: "Antibiotic" },
-  { id: "3", name: "Ibuprofen", category: "Pain Relief" },
-];
+import { medications } from "@/lib/data/medications";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const medication = medications.find((m) => m.id === id);
+  const medication = medications.find((m: (typeof medications)[number]) => m.id === id);
 
   if (!medication) {
     return Response.json({ error: "Medication not found" }, { status: 404 });
