@@ -1,6 +1,7 @@
 export const inventory = [
   {
     id: "1",
+    code: "BATCH-001",
     medicationId: "1",
     medicationName: "Paracetamol",
     pharmacyId: "p1",
@@ -14,6 +15,7 @@ export const inventory = [
   },
   {
     id: "2",
+    code: "BATCH-002",
     medicationId: "2",
     medicationName: "Amoxicillin",
     pharmacyId: "p1",
@@ -27,6 +29,7 @@ export const inventory = [
   },
   {
     id: "3",
+    code: "BATCH-003",
     medicationId: "1",
     medicationName: "Paracetamol",
     pharmacyId: "p2",
@@ -40,6 +43,7 @@ export const inventory = [
   },
   {
     id: "4",
+    code: "BATCH-004",
     medicationId: "3",
     medicationName: "Ibuprofen",
     pharmacyId: "p2",
