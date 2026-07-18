@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { PharmacyIllustration } from "@/components/PharmacyIllustration";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -86,6 +87,9 @@ const LoginPage = () => {
             <Button type="submit" className={styles.btnPrimary}>
               Login
             </Button>
+            <div className={styles.divider}>
+              <span>or</span>
+            </div>
             <div className={styles.socialLoginContainer}>
               <Button className={styles.btnSocial} variant="outline">
                 <GoogleIcon height='25' width='25' />
@@ -107,7 +111,9 @@ const LoginPage = () => {
         </Card>
       </div>
       <div className={styles.imageContainer}>
-        <img />
+        <div className={styles.imageContainer}>
+          <PharmacyIllustration className={styles.authIllustration} />
+        </div>
       </div>
 
     </div>

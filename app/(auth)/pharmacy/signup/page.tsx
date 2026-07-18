@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PharmacyIllustration } from "@/components/PharmacyIllustration";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -121,25 +122,19 @@ const Signup = () => {
                                             location ?
                                                 [location.lat, location.lng]
                                                 : [33.8933, 35.5015]}>
-                                        <MapZoomControl className={styles.zoomBtn} position="bottomright" />
-                                        <MapLocateControl className={styles.locateMeBtn} position="bottomright"
+                                        <MapZoomControl className={styles.zoomBtn} position="bottom-1 right-1" />
+                                        <MapLocateControl className={styles.locateMeBtn} position="bottom-1 left-1"
                                             onLocationFound={(e) => handleLocationChange(e.latlng.lat, e.latlng.lng)}
                                         />
                                         <MapSearchControl
                                             className={styles.searchBtn}
-                                            position="topleft"
-                                            onSelect={(place: any) => {
-                                                console.log("Selected place:", place)
-                                                if (place.lat && place.lng) {
-                                                    handleLocationChange(place.lat, place.lng)
-                                                } else if (place.center) {
-                                                    handleLocationChange(place.center[1], place.center[0])
-                                                } else if (place.geometry?.coordinates) {
-                                                    handleLocationChange(place.geometry.coordinates[1], place.geometry.coordinates[0])
-                                                }
+                                            position="top-1 left-1"
+                                            onPlaceSelect={(feature) => {
+                                                const [lon, lat] = feature.geometry.coordinates
+                                                handleLocationChange(lat, lon)
                                             }}
                                         />
-                                        <MapFullscreenControl className={styles.fullBtn} position="topright" />
+                                        <MapFullscreenControl className={styles.fullBtn} position="top-1 right-1" />
                                         <MapTileLayer />
                                         {location?.lat !== undefined && location?.lng !== undefined && (
                                             <MapMarker position={[location.lat, location.lng]} />
@@ -152,7 +147,7 @@ const Signup = () => {
                                     {error}
                                 </p>
                             )}
-                            <Field className={styles.formCheckboxGroup}>
+                            <Field orientation="horizontal" className={styles.formCheckboxGroup}>
                                 <Checkbox className={styles.formCheckbox} />
                                 <FieldLabel className={styles.FieldLabel} htmlFor="acceptTerms">
                                     Accept <a href="#" className={styles.termsLink}>Terms and Conditions</a>
@@ -162,6 +157,11 @@ const Signup = () => {
                                 <Button className={styles.btnPrimary} type="submit">
                                     Sign Up
                                 </Button>
+
+                                <div className={styles.divider}>
+                                    <span>or</span>
+                                </div>
+
                                 <div className={styles.socialLoginContainer}>
                                     <Button className={styles.btnSocial} variant="outline">
                                         <GoogleIcon height='18' width='18' />
@@ -184,9 +184,9 @@ const Signup = () => {
                     </CardContent>
                 </Card>
             </div >
-            <img>
-
-            </img>
+            <div className={styles.imageContainer}>
+                <PharmacyIllustration className={styles.authIllustration} />
+            </div>
         </div>
     );
 };

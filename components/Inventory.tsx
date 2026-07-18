@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react"
 import { columns } from "@/components/columns"
 import { DataTable } from "@/components/data-Table"
-import { InventoryPop } from "@/components/Dialogs/InventoryDialog"
+import { InventoryPop } from "@/components/EditTable/InventoryDialog"
 import { Footer } from "./PharmaFooter"
 import { Header } from "./PharmaHeader"
 import { medications as allMedications, Medication } from "@/data/medications";

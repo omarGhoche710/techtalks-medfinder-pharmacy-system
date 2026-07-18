@@ -4,7 +4,7 @@ import { useState } from 'react';
 import SearchBar from "./Searchbar";
 import type { Medication } from "@/data/medications";
 import { Button } from "@/components/ui/button";
-import { AddProduct } from './Dialogs/InventoryDialog';
+import { AddProduct } from './EditTable/InventoryDialog';
 
 type HeaderProps = {
   medications: Medication[];

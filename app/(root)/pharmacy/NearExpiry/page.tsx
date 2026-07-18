@@ -19,7 +19,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto pb-10 pt-0">
       <NearExpiry data={data} />
     </div>
   );

@@ -3,6 +3,7 @@
 import {
   ColumnDef,
   ColumnFiltersState,
+  RowSelectionState,
   SortingState,
   VisibilityState,
   flexRender,
@@ -37,6 +38,8 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   nameFilter: string,
+  rowSelection?: RowSelectionState
+  onRowSelectionChange?: (selection: RowSelectionState) => void
 }
 
 
@@ -44,10 +47,23 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   nameFilter,
+  rowSelection: controlledRowSelection,
+  onRowSelectionChange,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const [internalRowSelection, setInternalRowSelection] = React.useState<RowSelectionState>({})
+
+  const rowSelection = controlledRowSelection ?? internalRowSelection
+  const handleRowSelectionChange = React.useCallback(
+    (updater: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
+      const next = typeof updater === "function" ? updater(rowSelection) : updater
+      if (onRowSelectionChange) onRowSelectionChange(next)
+      else setInternalRowSelection(next)
+    },
+    [rowSelection, onRowSelectionChange]
+  )
 
   React.useEffect(() => {
     setColumnFilters(
@@ -65,10 +81,12 @@ export function DataTable<TData, TValue>({
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: handleRowSelectionChange,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
+      rowSelection,
     },
   })
 
