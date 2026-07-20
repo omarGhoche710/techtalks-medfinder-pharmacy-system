@@ -1,0 +1,421 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum PharmacyRole {
+  OWNER
+  PHARMACIST
+  EMPLOYEE
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  CANCELLED
+  EXPIRED
+}
+
+enum TransactionType {
+  STOCK_IN
+  DISPENSE
+  DAMAGE
+}
+
+enum TransferStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum MedicationStatus {
+  ACTIVE
+  NEAR_EXPIRY
+  DAMAGED
+  TRANSFERRED
+}
+
+// ============================================
+// TABLE 1: USER
+// ============================================
+
+model User {
+  id         String   @id @default(uuid())
+  clerkId    String   @unique
+  role       UserRole @default(USER)
+
+  username   String
+  firstName  String?
+  lastName   String?
+  photo      String
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  memberships      PharmacyMembership[]
+  createdPharmacies Pharmacy[]
+
+  sentInvitations  Invitation[] @relation("SentInvitations")
+  sentMemberships  PharmacyMembership[] @relation("SentMemberships")
+
+  transactions Transaction[]
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+// ============================================
+// TABLE 2: PHARMACY
+// ============================================
+
+model Pharmacy {
+  id          String   @id @default(uuid())
+
+  name        String
+  address     String
+  phone       String
+
+  lat         Float
+  lng         Float
+
+  is_approved Boolean @default(false)
+
+  created_by  String
+
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  creator      User @relation(fields: [created_by], references: [id])
+
+  memberships  PharmacyMembership[]
+  invitations  Invitation[]
+
+  medications       Medication[]
+  transactions      Transaction[]
+
+  outgoingTransfers Transfer[] @relation("FromPharmacy")
+  incomingTransfers Transfer[] @relation("ToPharmacy")
+
+  expiredMeds ExpiredMedication[]
+
+  auditLogs AuditLog[]
+
+  openingHours Pharmacy_Days?
+
+  exceptions PharmacyException[]
+
+  @@map("pharmacies")
+}
+
+// ============================================
+// TABLE 3: PHARMACY MEMBERSHIP
+// ============================================
+
+model PharmacyMembership {
+
+  id String @id @default(uuid())
+
+  user_id String
+
+  pharmacy_id String
+
+  role PharmacyRole
+
+  is_active Boolean @default(true)
+
+  joined_at DateTime @default(now())
+
+  invited_by String?
+
+  user User @relation(fields: [user_id], references: [id])
+
+  pharmacy Pharmacy @relation(fields: [pharmacy_id], references: [id])
+
+  inviter User? @relation("SentMemberships", fields: [invited_by], references: [id])
+
+  @@unique([user_id, pharmacy_id])
+
+  @@map("pharmacy_memberships")
+}
+
+// ============================================
+// TABLE 4: INVITATION
+// ============================================
+
+model Invitation {
+
+  id String @id @default(uuid())
+
+  pharmacy_id String
+
+  invited_email String
+
+  role PharmacyRole
+
+  token String @unique @default(uuid())
+
+  status InviteStatus @default(PENDING)
+
+  invited_by String
+
+  expires_at DateTime
+
+  created_at DateTime @default(now())
+
+  pharmacy Pharmacy @relation(fields: [pharmacy_id], references: [id])
+
+  inviter User @relation("SentInvitations", fields: [invited_by], references: [id])
+
+  @@map("invitations")
+}
+
+// ============================================
+// TABLE 5: PHARMACY OPENING HOURS
+// ============================================
+
+model Pharmacy_Days {
+
+  id String @id @default(uuid())
+
+  pharmacy_id String @unique
+
+  monday_open String?
+  monday_close String?
+
+  tuesday_open String?
+  tuesday_close String?
+
+  wednesday_open String?
+  wednesday_close String?
+
+  thursday_open String?
+  thursday_close String?
+
+  friday_open String?
+  friday_close String?
+
+  saturday_open String?
+  saturday_close String?
+
+  sunday_open String?
+  sunday_close String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  pharmacy Pharmacy @relation(fields: [pharmacy_id], references: [id], onDelete: Cascade)
+
+  @@map("pharmacy_days")
+}
+
+// ============================================
+// TABLE 6: PHARMACY EXCEPTIONS
+// ============================================
+
+model PharmacyException {
+
+  id String @id @default(uuid())
+
+  pharmacy_id String
+
+  date DateTime
+
+  open_time String?
+
+  close_time String?
+
+  reason String?
+
+  pharmacy Pharmacy @relation(fields: [pharmacy_id], references: [id], onDelete: Cascade)
+
+  @@map("pharmacy_exceptions")
+}
+
+// ============================================
+// TABLE 7: MEDICATION
+// ============================================
+
+model Medication {
+
+  id String @id @default(uuid())
+
+  pharmacy_id String
+
+  code String @unique
+
+  name String
+
+  description String?
+
+  date_expired DateTime
+
+  stock Int @default(0)
+
+  price Float
+
+  discount_percentage Float?
+
+  discounted_price Float?
+
+  status MedicationStatus @default(ACTIVE)
+
+  is_transferable Boolean @default(false)
+
+  transfer_reason String?
+
+  created_at DateTime @default(now())
+
+  updated_at DateTime @updatedAt
+
+  pharmacy Pharmacy @relation(fields: [pharmacy_id], references: [id])
+
+  transactions Transaction[]
+
+  transfers Transfer[]
+
+  @@map("medications")
+}
+
+// ============================================
+// TABLE 8: TRANSACTION
+// ============================================
+
+model Transaction {
+
+  id String @id @default(uuid())
+
+  medication_id String
+
+  pharmacy_id String
+
+  performed_by String
+
+  type TransactionType
+
+  quantity_changed Int
+
+  created_at DateTime @default(now())
+
+  medication Medication @relation(fields: [medication_id], references: [id])
+
+  pharmacy Pharmacy @relation(fields: [pharmacy_id], references: [id])
+
+  user User @relation(fields: [performed_by], references: [id])
+
+  @@map("transactions")
+}
+
+// ============================================
+// TABLE 9: EXPIRED MEDICATION
+// ============================================
+
+model ExpiredMedication {
+
+  id String @id @default(uuid())
+
+  pharmacy_id String?
+
+  code String @unique
+
+  name String
+
+  date_expired DateTime
+
+  disposed_at DateTime?
+
+  created_at DateTime @default(now())
+
+  pharmacy Pharmacy? @relation(fields: [pharmacy_id], references: [id])
+
+  @@map("expired_medications")
+}
+
+// ============================================
+// TABLE 10: TRANSFER
+// ============================================
+
+model Transfer {
+
+  id String @id @default(uuid())
+
+  from_pharmacy_id String
+
+  to_pharmacy_id String
+
+  medication_id String
+
+  quantity Int
+
+  status TransferStatus @default(PENDING)
+
+  discount_percentage Float?
+
+  discounted_price Float?
+
+  reason String?
+
+  created_at DateTime @default(now())
+
+  confirmed_at DateTime?
+
+  fromPharmacy Pharmacy @relation("FromPharmacy", fields: [from_pharmacy_id], references: [id])
+
+  toPharmacy Pharmacy @relation("ToPharmacy", fields: [to_pharmacy_id], references: [id])
+
+  medication Medication @relation(fields: [medication_id], references: [id])
+
+  @@map("transfers")
+}
+
+// ============================================
+// TABLE 11: AUDIT LOG
+// ============================================
+
+model AuditLog {
+
+  id String @id @default(uuid())
+
+  user_id String
+
+  action String
+
+  entity_type String
+
+  entity_id String
+
+  pharmacy_id String?
+
+  details String?
+
+  ip_address String?
+
+  user_agent String?
+
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+
+  pharmacy Pharmacy? @relation(fields: [pharmacy_id], references: [id])
+
+  @@map("audit_logs")
+}
