@@ -11,9 +11,7 @@ type ResultListItemProps = {
 
 export default function ResultListItem({ result, nearMe }: ResultListItemProps) {
   return (
-    <article
-      className="rounded-xl border border-gray-200 bg-white p-4 transition-shadow hover:shadow-sm"
-    >
+    <article className="card-padded transition-shadow hover:shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h3 className="text-base font-semibold text-gray-900">
@@ -21,7 +19,7 @@ export default function ResultListItem({ result, nearMe }: ResultListItemProps) 
           </h3>
           <p className="text-xs text-gray-500">{result.medicineCode}</p>
         </div>
-        <span className="text-lg font-bold text-[#2563eb]">
+        <span className="price-text">
           ${result.price.toFixed(2)}
         </span>
       </div>
@@ -41,7 +39,7 @@ export default function ResultListItem({ result, nearMe }: ResultListItemProps) 
           {result.stock !== "out_of_stock" && ` (${result.quantity})`}
         </span>
         {nearMe && result.distanceKm !== null && (
-          <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+          <span className="badge-muted">
             {formatDistance(result.distanceKm)}
           </span>
         )}

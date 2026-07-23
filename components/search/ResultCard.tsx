@@ -34,11 +34,7 @@ export default function ResultCard({
       role="button"
       aria-pressed={isSelected}
       aria-label={`${result.medicineName} at ${result.pharmacy.name}`}
-      className={`cursor-pointer rounded-xl border bg-white p-4 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb] ${
-        isSelected
-          ? "border-[#2563eb] shadow-[0_0_0_3px_rgba(37,99,235,0.12)]"
-          : "border-gray-200 hover:border-gray-300 hover:shadow-sm"
-      }`}
+      className={`card-interactive ${isSelected ? "card-selected" : ""}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
@@ -47,7 +43,7 @@ export default function ResultCard({
           </h3>
           <p className="text-xs text-gray-500">{result.medicineCode}</p>
         </div>
-        <span className="text-lg font-bold text-[#2563eb]">
+        <span className="price-text">
           ${result.price.toFixed(2)}
         </span>
       </div>
@@ -67,7 +63,7 @@ export default function ResultCard({
           {result.stock !== "out_of_stock" && ` (${result.quantity})`}
         </span>
         {nearMe && result.distanceKm !== null && (
-          <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+          <span className="badge-muted">
             {formatDistance(result.distanceKm)}
           </span>
         )}
@@ -99,7 +95,7 @@ export default function ResultCard({
           e.stopPropagation();
           setExpanded(!expanded);
         }}
-        className="mt-3 text-sm font-medium text-[#2563eb] hover:text-[#1d4ed8]"
+        className="mt-3 text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-hover)]"
         aria-expanded={expanded}
       >
         {expanded ? "Show less" : "Show more"}

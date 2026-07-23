@@ -15,7 +15,7 @@ export default function SearchStateView({
 }: SearchStateViewProps) {
   if (state === "idle") {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center">
+      <div className="card-panel border-dashed">
         <svg
           className="mb-4 h-12 w-12 text-gray-300"
           fill="none"
@@ -46,9 +46,9 @@ export default function SearchStateView({
         role="status"
         aria-live="polite"
         aria-label="Loading search results"
-        className="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-16"
+        className="card-panel"
       >
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-[#2563eb]" />
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-[var(--primary)]" />
         <p className="mt-4 text-sm font-medium text-gray-700">
           Searching for &ldquo;{query}&rdquo;…
         </p>
@@ -61,7 +61,7 @@ export default function SearchStateView({
       <div
         role="status"
         aria-live="polite"
-        className="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-16 text-center"
+        className="card-panel"
       >
         <svg
           className="mb-4 h-12 w-12 text-gray-300"
@@ -114,7 +114,7 @@ export default function SearchStateView({
           <button
             type="button"
             onClick={onRetry}
-            className="mt-4 rounded-full bg-[#2563eb] px-6 py-2 text-sm font-medium text-white hover:bg-[#1d4ed8]"
+            className="btn-primary-sm mt-4 px-6"
           >
             Try again
           </button>

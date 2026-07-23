@@ -116,7 +116,7 @@ export default function SearchPageClient({
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="flex flex-1 flex-col">
       <div className="mb-8">
         <SearchBar
           initialQuery={query}
@@ -142,7 +142,7 @@ export default function SearchPageClient({
             result{filteredResults.length !== 1 ? "s" : ""} for &ldquo;{query}
             &rdquo;
             {nearMe && (
-              <span className="ml-1 text-[#2563eb]">· Near Me</span>
+              <span className="ml-1 text-[var(--primary)]">· Near Me</span>
             )}
           </p>
           <div className="flex flex-wrap items-center gap-4">

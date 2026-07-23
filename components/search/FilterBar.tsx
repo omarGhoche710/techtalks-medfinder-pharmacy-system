@@ -52,7 +52,7 @@ export default function FilterBar({
                 maxDistance: e.target.value ? Number(e.target.value) : null,
               })
             }
-            className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 outline-none focus:border-[#2563eb]"
+            className="input-field"
           >
             {distanceOptions.map((opt) => (
               <option key={String(opt.value)} value={opt.value ?? ""}>
@@ -74,7 +74,7 @@ export default function FilterBar({
               maxPrice: e.target.value ? Number(e.target.value) : null,
             })
           }
-          className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 outline-none focus:border-[#2563eb]"
+          className="input-field"
         >
           {priceOptions.map((opt) => (
             <option key={String(opt.value)} value={opt.value ?? ""}>
@@ -95,7 +95,7 @@ export default function FilterBar({
               availability: e.target.value as StockStatus | "all",
             })
           }
-          className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 outline-none focus:border-[#2563eb]"
+          className="input-field"
         >
           {availabilityOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>

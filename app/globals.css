@@ -20,6 +20,112 @@ body {
   font-family: var(--font-sans);
 }
 
+@layer components {
+  .root {
+    @apply flex min-h-full flex-1 bg-gray-50;
+  }
+
+  .root-container {
+    @apply flex min-h-full flex-1 flex-col pb-16 md:pb-0;
+  }
+
+  .wrapper {
+    @apply mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8;
+  }
+
+  .text-accent {
+    @apply font-semibold text-[var(--primary)];
+  }
+
+  .focus-ring {
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)];
+  }
+
+  .btn-primary {
+    @apply shrink-0 rounded-full bg-[var(--primary)] font-semibold text-white transition-colors hover:bg-[var(--primary-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)];
+  }
+
+  .btn-primary-sm {
+    @apply shrink-0 rounded-full bg-[var(--primary)] px-7 py-0 text-sm font-semibold text-white transition-colors hover:bg-[var(--primary-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)] h-11;
+  }
+
+  .btn-primary-lg {
+    @apply shrink-0 rounded-full bg-[var(--primary)] px-8 py-0 text-base font-semibold text-white transition-colors hover:bg-[var(--primary-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)] h-14;
+  }
+
+  .input-field {
+    @apply rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 outline-none focus:border-[var(--primary)];
+  }
+
+  .input-search {
+    @apply w-full rounded-full border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 outline-none transition-shadow focus:border-[var(--primary)] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.12)];
+  }
+
+  .input-search-sm {
+    @apply h-11 w-full rounded-full border border-gray-200 bg-white px-5 pr-11 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-shadow focus:border-[var(--primary)] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.12)];
+  }
+
+  .input-search-lg {
+    @apply h-14 w-full rounded-full border border-gray-200 bg-white px-6 pr-12 text-base text-gray-900 placeholder:text-gray-400 outline-none transition-shadow focus:border-[var(--primary)] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.12)];
+  }
+
+  .card {
+    @apply rounded-xl border border-gray-200 bg-white;
+  }
+
+  .card-padded {
+    @apply rounded-xl border border-gray-200 bg-white p-4;
+  }
+
+  .card-interactive {
+    @apply cursor-pointer rounded-xl border border-gray-200 bg-white p-4 transition-all hover:border-gray-300 hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)];
+  }
+
+  .card-selected {
+    @apply border-[var(--primary)] shadow-[0_0_0_3px_rgba(37,99,235,0.12)];
+  }
+
+  .card-panel {
+    @apply flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-16 text-center;
+  }
+
+  .badge-muted {
+    @apply rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600;
+  }
+
+  .badge-medicine {
+    @apply rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700;
+  }
+
+  .badge-pharmacy {
+    @apply rounded-full bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700;
+  }
+
+  .dropdown-panel {
+    @apply absolute left-0 right-0 top-[calc(100%+6px)] z-50 max-h-72 overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-[0_8px_30px_rgba(0,0,0,0.08)];
+  }
+
+  .price-text {
+    @apply text-lg font-bold text-[var(--primary)];
+  }
+
+  .nav-link {
+    @apply text-sm font-medium text-gray-700 transition-colors hover:text-gray-900;
+  }
+
+  .nav-link-active {
+    @apply text-[var(--primary)];
+  }
+
+  .sidebar {
+    @apply hidden w-64 shrink-0 flex-col border-r border-gray-100 bg-white md:flex;
+  }
+
+  .mobile-nav {
+    @apply fixed inset-x-0 bottom-0 z-40 border-t border-gray-100 bg-white md:hidden;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #f9fafb;
