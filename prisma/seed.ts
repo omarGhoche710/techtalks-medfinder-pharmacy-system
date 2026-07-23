@@ -1,5 +1,4 @@
 import { PrismaClient } from "@/app/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
 
 import { seedUsers } from "./seeders/UserSeeder";
 import { seedPharmacies } from "./seeders/PharmacySeeder";
@@ -9,13 +8,7 @@ import { seedTransactions } from "./seeders/TransactionSeeder";
 import { seedInvitations } from "./seeders/InvitationSeeder";
 import { handleError } from "@/lib/utils";
 
-// New-style Prisma client with the driver adapter (no more `?schema=`
-// connection-string tricks — the adapter owns the pg Pool).
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
-
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 async function main() {
   console.log("🚀 Starting database seeding...\n");
