@@ -29,7 +29,7 @@ export default function SortControls({
         aria-label="Sort results"
         value={sort}
         onChange={(e) => onChange(e.target.value as SortOption)}
-        className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 outline-none focus:border-[#2563eb]"
+        className="input-field"
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>

@@ -1,12 +1,24 @@
 import type { SearchParams, SearchResult, Suggestion } from "@/lib/types";
 
-export async function fetchSuggestions(query: string): Promise<Suggestion[]> {
-  const res = await fetch(
-    `/api/suggestions?q=${encodeURIComponent(query)}`
-  );
-  if (!res.ok) throw new Error("Failed to fetch suggestions");
-  const data = await res.json();
-  return data.suggestions;
+function resultsToSuggestions(results: SearchResult[]): Suggestion[] {
+  const medicineNames = new Set<string>();
+  const pharmacyNames = new Set<string>();
+
+  for (const result of results) {
+    medicineNames.add(result.medicineName);
+    pharmacyNames.add(result.pharmacy.name);
+  }
+
+  return [
+    ...Array.from(medicineNames).map((text) => ({
+      text,
+      type: "medicine" as const,
+    })),
+    ...Array.from(pharmacyNames).map((text) => ({
+      text,
+      type: "pharmacy" as const,
+    })),
+  ].slice(0, 8);
 }
 
 export async function fetchSearchResults(
@@ -25,4 +37,11 @@ export async function fetchSearchResults(
   }
   const data = await res.json();
   return data.results;
+}
+
+export async function fetchSuggestions(
+  params: SearchParams
+): Promise<Suggestion[]> {
+  const results = await fetchSearchResults(params);
+  return resultsToSuggestions(results);
 }

@@ -24,7 +24,7 @@ function HighlightedText({ text, query }: { text: string; query: string }) {
     <>
       {parts.map((part, i) =>
         part.toLowerCase() === query.trim().toLowerCase() ? (
-          <strong key={i} className="font-semibold text-[#2563eb]">
+          <strong key={i} className="text-accent">
             {part}
           </strong>
         ) : (
@@ -100,7 +100,12 @@ export default function SearchBar({
     debounceRef.current = setTimeout(async () => {
       setSuggestLoading(true);
       try {
-        const results = await fetchSuggestions(query);
+        const results = await fetchSuggestions({
+          query,
+          nearMe,
+          lat: nearMe ? lat : undefined,
+          lng: nearMe ? lng : undefined,
+        });
         setSuggestions(results);
       } catch {
         setSuggestions([]);
@@ -112,7 +117,7 @@ export default function SearchBar({
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query]);
+  }, [query, nearMe, lat, lng]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -195,11 +200,7 @@ export default function SearchBar({
             aria-autocomplete="list"
             aria-controls="search-suggestions"
             role="combobox"
-            className={`w-full rounded-full border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 outline-none transition-shadow focus:border-[#2563eb] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.12)] ${
-              isLarge
-                ? "h-14 px-6 pr-12 text-base"
-                : "h-11 px-5 pr-11 text-sm"
-            }`}
+            className={isLarge ? "input-search-lg" : "input-search-sm"}
           />
           <svg
             className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-gray-400 ${
@@ -230,9 +231,7 @@ export default function SearchBar({
           <button
             type="button"
             onClick={() => query.trim() && navigateToSearch(query.trim())}
-            className={`shrink-0 rounded-full bg-[#2563eb] font-semibold text-white transition-colors hover:bg-[#1d4ed8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb] ${
-              isLarge ? "h-14 px-8 text-base" : "h-11 px-7 text-sm"
-            }`}
+            className={isLarge ? "btn-primary-lg" : "btn-primary-sm"}
           >
             Search
           </button>
@@ -244,7 +243,7 @@ export default function SearchBar({
           id="search-suggestions"
           role="listbox"
           aria-label="Search suggestions"
-          className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 max-h-72 overflow-y-auto rounded-xl border border-gray-200 bg-white py-1 shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
+          className="dropdown-panel"
         >
           {suggestLoading ? (
             <li className="px-4 py-3 text-sm text-gray-500">Loading…</li>
@@ -262,11 +261,11 @@ export default function SearchBar({
                 }`}
               >
                 <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                  className={
                     suggestion.type === "medicine"
-                      ? "bg-blue-50 text-blue-700"
-                      : "bg-purple-50 text-purple-700"
-                  }`}
+                      ? "badge-medicine"
+                      : "badge-pharmacy"
+                  }
                 >
                   {suggestion.type === "medicine" ? "Medicine" : "Pharmacy"}
                 </span>

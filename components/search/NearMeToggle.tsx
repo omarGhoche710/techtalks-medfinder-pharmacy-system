@@ -21,8 +21,8 @@ export default function NearMeToggle({
         aria-label="Near Me toggle"
         disabled={loading}
         onClick={() => onChange(!enabled)}
-        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb] ${
-          enabled ? "bg-[#2563eb]" : "bg-gray-200"
+        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-ring ${
+          enabled ? "bg-[var(--primary)]" : "bg-gray-200"
         } ${loading ? "opacity-60" : ""}`}
       >
         <span

@@ -8,7 +8,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <section className="flex flex-1 flex-col items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
+      <section className="flex flex-1 flex-col items-center justify-center py-10">
         <div className="w-full max-w-2xl text-center">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             Find your medication
@@ -47,10 +47,7 @@ export default function HomePage() {
                 desc: "View price, stock, and distance",
               },
             ].map((item) => (
-              <div
-                key={item.title}
-                className="rounded-xl border border-gray-100 bg-white px-4 py-5 shadow-sm"
-              >
+              <div key={item.title} className="card px-4 py-5 shadow-sm">
                 <h3 className="text-sm font-semibold text-gray-900">
                   {item.title}
                 </h3>
