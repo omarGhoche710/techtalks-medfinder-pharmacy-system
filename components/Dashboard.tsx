@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Package, AlertTriangle, XCircle, PackageX, ArrowRight } from "lucide-react";
+import { Package, AlertTriangle, XCircle, PackageX, ArrowRight, Users } from "lucide-react";
 
 type OutOfStockItem = { id: string; name: string };
 
@@ -9,7 +9,7 @@ interface DashboardProps {
     nearExpiryCount: number;
     expiredCount: number;
     outOfStockItems: OutOfStockItem[];
-    onNavigate: (page: "pharmacy/Inventory" | "pharmacy/NearExpiry" | "pharmacy/Expired") => void;
+    onNavigate: (page: "pharmacy/Inventory" | "pharmacy/NearExpiry" | "pharmacy/Expired" | "pharmacy/Staff") => void;
 }
 
 export default function Dashboard({
@@ -111,6 +111,13 @@ export default function Dashboard({
                         tone="coral"
                         onClick={() => onNavigate("pharmacy/Expired")}
                     />
+                    <ActionCard
+                        icon={<Users className="w-6 h-6" />}
+                        title="Staff"
+                        description="Invite team members and manage who has access to your pharmacy."
+                        tone="violet"
+                        onClick={() => onNavigate("pharmacy/Staff")}
+                    />
                 </div>
             </div>
         </div>
@@ -126,12 +133,13 @@ function StatCard({
     icon: React.ReactNode;
     label: string;
     value: number;
-    tone: "teal" | "amber" | "coral";
+    tone: "teal" | "amber" | "coral" | "violet";
 }) {
     const tones = {
         teal: "bg-white text-[#145C54]",
         amber: "bg-white text-[#B9761F]",
         coral: "bg-white text-[#C4544A]",
+        violet: "bg-white text-[#6B4FA0]",
     };
     return (
         <div className={`rounded-2xl p-5 flex items-center gap-4 border border-[#D8E7DF] ${tones[tone]}`}>
@@ -154,13 +162,14 @@ function ActionCard({
     icon: React.ReactNode;
     title: string;
     description: string;
-    tone: "teal" | "amber" | "coral";
+    tone: "teal" | "amber" | "coral" | "violet";
     onClick: () => void;
 }) {
     const iconTones = {
         teal: "bg-[#E1F0EA] text-[#145C54]",
         amber: "bg-[#FAEEDA] text-[#B9761F]",
         coral: "bg-[#F7E7E5] text-[#C4544A]",
+        violet: "bg-[#EEE8F7] text-[#6B4FA0]",
     };
     return (
         <button

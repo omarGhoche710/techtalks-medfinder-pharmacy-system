@@ -19,7 +19,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return daysUntilExpiry > 0 && daysUntilExpiry <= nearExpiryThresholdDays
   }).length
 
-  const handleNavigate = (page: "pharmacy/Inventory" | "pharmacy/NearExpiry" | "pharmacy/Expired") => {
+  const handleNavigate = (page: "pharmacy/Inventory" | "pharmacy/NearExpiry" | "pharmacy/Expired" | "pharmacy/Staff") => {
     router.push(`/${page}`)}
 
   return (

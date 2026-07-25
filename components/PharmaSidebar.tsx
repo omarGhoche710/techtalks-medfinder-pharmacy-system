@@ -8,6 +8,7 @@ import {
     ChevronDown,
     CircleUserRound,
     HomeIcon,
+    Users,
     type LucideIcon
 } from 'lucide-react'
 import { usePathname } from "next/navigation";
@@ -184,6 +185,29 @@ export function AppSidebar() {
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        borderRadius: "0.375rem",
+                        borderWidth: "1px",
+                        borderStyle: "solid",
+                        borderColor: "#D8E7DF",
+                        paddingLeft: "0.75rem",
+                        paddingRight: "0.75rem",
+                        paddingTop: "0.375rem",
+                        paddingBottom: "0.375rem",
+                        fontSize: "0.875rem",
+                    }}
+                    >
+                        <Users style={{ color: "#145C54", width: "20px", height: "20px" }} />
+                        <Link href='/pharmacy/Staff' style={{ flex: 1 }}>
+                            Staff
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+
                 {groups.map((group) => (
                     <NavSection key={group.label} group={group} />
                 ))}

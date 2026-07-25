@@ -13,6 +13,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Medication } from "@/data/medications"
+import { TransferDialog, TransferAllocation } from "./TransferDialog"
 
 interface NearExpiryActionBarProps {
     selected: Medication[]
@@ -33,19 +34,10 @@ export function NearExpiryActionBar({
     const [damageOpen, setDamageOpen] = useState(false)
     const [transferOpen, setTransferOpen] = useState(false)
     const [percent, setPercent] = useState("")
-    const [activeAction, setActiveAction] = useState<"a" | "b" | null>(null);
-    
 
     if (selected.length === 0) return null
 
     const percentNum = Math.min(100, Math.max(0, parseFloat(percent) || 0))
-
-    const handleRequestTransfer = () => {
-        onTransfer(selected)
-        setTransferOpen(false)
-        onClearSelection()
-    }
-
 
     const handleApplyDiscount = () => {
         onApplyDiscount(selected, percentNum)
@@ -60,12 +52,11 @@ export function NearExpiryActionBar({
         onClearSelection()
     }
 
-    const handleDemand = () => {
-
-    }
-
-    const handleLocation = () => {
-        
+    const handleTransferSend = (allocations: TransferAllocation[]) => {
+        // TODO: pass full `allocations` (per-pharmacy qty/price) through once API integration is wired up.
+        // For now we only forward the flat medicine list, matching the existing onTransfer signature.
+        onTransfer(selected)
+        onClearSelection()
     }
 
     return (
@@ -158,39 +149,12 @@ export function NearExpiryActionBar({
             </Dialog>
 
             {/* Transfer dialog */}
-            <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
-                <DialogContent className="sm:max-w-sm">
-                    <DialogHeader>
-                        <DialogTitle>Request Transfer</DialogTitle>
-                        <DialogDescription>
-                            Allow Transfer of {selected.length} selected medicines to other pharmacies.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div>
-                        <Label className="text-xs uppercase tracking-wide text-slate-500 mb-1.5 block">
-                            Transfer Based on:
-                        </Label>
-                        <div className="">
-                            <Button disabled={activeAction==="b"} onClick={() => setActiveAction("a")}>
-                                Location
-                            </Button>
-                            <Button disabled={activeAction==="a"} onClick={() => setActiveAction("b")}>
-                                Demand
-                            </Button>
-                            <Button className="flex text-xs text-[#145C54] bg-transparent px-1 py-1 round transition-all duration-300 hover:border-[#78b3ac] hover:shadow-lg hover:bg-[#F3F8F5]"
-                            onClick={() => setActiveAction(null)}>Cancel</Button>
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <DialogClose asChild>
-                            <Button variant="outline">Close</Button>
-                        </DialogClose>
-                        <Button onClick={handleRequestTransfer}>
-                            Apply to {selected.length} items
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <TransferDialog
+                open={transferOpen}
+                onOpenChange={setTransferOpen}
+                medicines={selected}
+                onSend={handleTransferSend}
+            />
         </>
     )
 }
