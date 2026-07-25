@@ -24,3 +24,12 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@utility flex-center {
+  @apply flex justify-center items-center;
+}
+
+@utility auth {
+  @apply flex-center min-h-screen w-full bg-purple-100;
+}
+
