@@ -17,6 +17,7 @@ export function NearExpiry({ data }: { data: Medication[] }) {
     const [appliedFilter, setAppliedFilter] = useState("")
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
     const [isOpen, setIsOpen] = useState(false)
+    
 
     const selectedMedicines = useMemo(
         () =>
@@ -62,7 +63,7 @@ export function NearExpiry({ data }: { data: Medication[] }) {
                                 onClearSelection={() => setRowSelection({})}
                                 onApplyDiscount={handleApplyDiscount}
                                 onConfirmDamage={handleConfirmDamage}
-                                onTransaction={handleTransaction}
+                                onTransfer={handleTransaction}
                             />
                         </div>
                         <DataTable

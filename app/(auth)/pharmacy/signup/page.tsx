@@ -21,6 +21,10 @@ import {
     MapMarker,
     MapFullscreenControl,
 } from "@/components/ui/map";
+import {
+    Dialog, DialogContent, DialogDescription, DialogFooter,
+    DialogHeader, DialogTitle, DialogClose,
+} from "@/components/ui/dialog"
 import type { LatLngExpression } from "leaflet"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,6 +33,7 @@ import GoogleIcon from '@iconify-react/material-icon-theme/google';
 import BaselineAppleIcon from '@iconify-react/ic/baseline-apple';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { setSignupLocation } from "@/lib/signupLocation";
 
 const Signup = () => {
     const [pharmacyName, setPharmacyName] = useState("");
@@ -37,26 +42,39 @@ const Signup = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [location, setLocation] = useState<{ lat: number; lng: number; } | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
     const router = useRouter();
 
-    const handleSignup = async (e: any) => {
+    const handleSubmitClick = (e: any) => {
         e.preventDefault();
+        setError(null);
         if (password !== confirmPassword) {
             setError("Passwords do not match");
             return;
         }
-        try {
-            setError(null);
-            //api push 
+        if (!location) {
+            setError("Please select your pharmacy location on the map");
+            return;
         }
-        catch (err) {
-            setError("Signup failed. Please try again.");
-        }
-        router.push('/pharmacy/dashboard');
+        setConfirmOpen(true);
     };
 
     const handleLocationChange = (lat: number, lng: number) => {
         setLocation({ lat, lng });
+    };
+
+    const handleConfirmSignup = async () => {
+        if (!location) return;
+        try {
+            setSignupLocation(location); // persist for other files to read
+            //api push
+        } catch (err) {
+            setError("Signup failed. Please try again.");
+            setConfirmOpen(false);
+            return;
+        }
+        setConfirmOpen(false);
+        router.push('/pharmacy/Dashboard');
     };
 
     useEffect(() => {
@@ -72,10 +90,9 @@ const Signup = () => {
                         <CardDescription className={styles.formDescription}>
                             Enter your details below to create an account
                         </CardDescription>
-
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleSignup} className={styles.formGroup}>
+                        <form onSubmit={handleSubmitClick} className={styles.formGroup}>
                             <div className={styles.SignupContainer}>
                                 <div className={styles.formGroup}>
                                     <Label className={styles.formLabel} htmlFor="pharmacyName">Pharmacy Name</Label>
@@ -107,10 +124,6 @@ const Signup = () => {
                                 <div className={styles.formGroup}>
                                     <div className="flex items-center">
                                         <Label className={styles.formLabel} htmlFor="confirmPassword">Confirm Password</Label>
-                                        <a
-                                            href="#"
-                                            className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                                        />
                                     </div>
                                     <Input className={styles.formInput} id="confirmPassword" type="password" onChange={(e) => setConfirmPassword(e.target.value)} required />
                                 </div>
@@ -118,10 +131,7 @@ const Signup = () => {
                                     <Map
                                         key={location ? `${location?.lat}-${location?.lng}` : "default"}
                                         className={styles.locationCardMap}
-                                        center={
-                                            location ?
-                                                [location.lat, location.lng]
-                                                : [33.8933, 35.5015]}>
+                                        center={location ? [location.lat, location.lng] : [33.8933, 35.5015]}>
                                         <MapZoomControl className={styles.zoomBtn} position="bottom-1 right-1" />
                                         <MapLocateControl className={styles.locateMeBtn} position="bottom-1 left-1"
                                             onLocationFound={(e) => handleLocationChange(e.latlng.lat, e.latlng.lng)}
@@ -177,18 +187,42 @@ const Signup = () => {
                                     <Button className={styles.authSwitchLink} variant="link" onClick={() => router.push('/pharmacy/login')}>
                                         Log In
                                     </Button>
-
                                 </CardAction>
                             </CardFooter>
                         </form>
                     </CardContent>
                 </Card>
-            </div >
+            </div>
             <div className={styles.imageContainer}>
                 <PharmacyIllustration className={styles.authIllustration} />
             </div>
+
+            {/* Confirmation dialog — recaps the last selected location before final submit */}
+            <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+                <DialogContent className="sm:max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>Confirm pharmacy location</DialogTitle>
+                        <DialogDescription>
+                            Is this the correct location for your pharmacy? You can go back and adjust the pin if not.
+                        </DialogDescription>
+                    </DialogHeader>
+                    {location && (
+                        <div className="rounded-lg bg-[#F3F8F5] border border-[#D8E7DF] p-3 text-sm text-[#1F2B29] font-mono">
+                            Lat: {location.lat.toFixed(6)}<br />
+                            Lng: {location.lng.toFixed(6)}
+                        </div>
+                    )}
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button variant="outline">Change location</Button>
+                        </DialogClose>
+                        <Button className={styles.btnPrimary} onClick={handleConfirmSignup}>
+                            Confirm & Sign Up
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
-
 export default Signup;

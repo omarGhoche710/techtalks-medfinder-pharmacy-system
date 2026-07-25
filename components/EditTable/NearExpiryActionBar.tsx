@@ -31,11 +31,21 @@ export function NearExpiryActionBar({
 }: NearExpiryActionBarProps) {
     const [discountOpen, setDiscountOpen] = useState(false)
     const [damageOpen, setDamageOpen] = useState(false)
+    const [transferOpen, setTransferOpen] = useState(false)
     const [percent, setPercent] = useState("")
+    const [activeAction, setActiveAction] = useState<"a" | "b" | null>(null);
+    
 
     if (selected.length === 0) return null
 
     const percentNum = Math.min(100, Math.max(0, parseFloat(percent) || 0))
+
+    const handleRequestTransfer = () => {
+        onTransfer(selected)
+        setTransferOpen(false)
+        onClearSelection()
+    }
+
 
     const handleApplyDiscount = () => {
         onApplyDiscount(selected, percentNum)
@@ -50,6 +60,14 @@ export function NearExpiryActionBar({
         onClearSelection()
     }
 
+    const handleDemand = () => {
+
+    }
+
+    const handleLocation = () => {
+        
+    }
+
     return (
         <>
             <div className="sticky top-0 z-20 mb-3 flex items-center justify-between rounded-xl border border-[#D8E7DF] bg-[#145C54] px-4 py-3 text-white shadow-sm">
@@ -57,13 +75,7 @@ export function NearExpiryActionBar({
                     {selected.length} selected
                 </span>
                 <div className="flex gap-2">
-                    <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => onTransfer(selected)}
-                        disabled
-                        title="Coming soon"
-                    >
+                    <Button variant="secondary" size="sm" onClick={() => setTransferOpen(true)}>
                         Transfer
                     </Button>
                     <Button variant="secondary" size="sm" onClick={() => setDiscountOpen(true)}>
@@ -140,6 +152,41 @@ export function NearExpiryActionBar({
                             onClick={handleConfirmDamage}
                         >
                             Confirm damage
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Transfer dialog */}
+            <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
+                <DialogContent className="sm:max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>Request Transfer</DialogTitle>
+                        <DialogDescription>
+                            Allow Transfer of {selected.length} selected medicines to other pharmacies.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div>
+                        <Label className="text-xs uppercase tracking-wide text-slate-500 mb-1.5 block">
+                            Transfer Based on:
+                        </Label>
+                        <div className="">
+                            <Button disabled={activeAction==="b"} onClick={() => setActiveAction("a")}>
+                                Location
+                            </Button>
+                            <Button disabled={activeAction==="a"} onClick={() => setActiveAction("b")}>
+                                Demand
+                            </Button>
+                            <Button className="flex text-xs text-[#145C54] bg-transparent px-1 py-1 round transition-all duration-300 hover:border-[#78b3ac] hover:shadow-lg hover:bg-[#F3F8F5]"
+                            onClick={() => setActiveAction(null)}>Cancel</Button>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button variant="outline">Close</Button>
+                        </DialogClose>
+                        <Button onClick={handleRequestTransfer}>
+                            Apply to {selected.length} items
                         </Button>
                     </DialogFooter>
                 </DialogContent>
