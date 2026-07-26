@@ -9,11 +9,11 @@ export async function GET(request: Request) {
   let result = inventory;
 
   if (pharmacyId) {
-    result = result.filter((item) => item.pharmacyId === pharmacyId);
+    result = result.filter((item: (typeof inventory)[number]) => item.pharmacyId === pharmacyId);
   }
 
   if (medicationId) {
-    result = result.filter((item) => item.medicationId === medicationId);
+    result = result.filter((item: (typeof inventory)[number]) => item.medicationId === medicationId);
   }
 
   return Response.json(result);

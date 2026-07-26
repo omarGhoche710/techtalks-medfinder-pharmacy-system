@@ -1,4 +1,4 @@
-import { medications } from "@/lib/data/medications";
+import { medications } from "../../../../lib/data/medications";
 
 export async function GET(
   request: Request,
