@@ -20,7 +20,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   const pathname = req.nextUrl.pathname;
 
   const isPublic =
-    pathname === '/' ||
+    // pathname === '/' ||
     publicPaths.some((path) => pathname.startsWith(path));
 
   if (!isPublic) {
