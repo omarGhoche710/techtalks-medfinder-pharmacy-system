@@ -1,3 +1,4 @@
+import { UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 
 export default function Home() {
@@ -33,6 +34,7 @@ export default function Home() {
             </a>{" "}
             center.
           </p>
+          <UserButton />
         </div>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
           <a
