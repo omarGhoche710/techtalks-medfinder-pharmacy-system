@@ -1,58 +1,41 @@
-export const transactions = [
+export const transactions: {
+  id: string;
+  type: "stock_in" | "dispense" | "damage";
+  inventoryId: string;
+  medicationName: string;
+  pharmacyName: string;
+  quantity: number;
+  notes: string;
+  date: string;
+}[] = [
   {
     id: "t1",
-    type: "purchase",
-    medicationId: "1",
+    type: "stock_in",
+    inventoryId: "1",
     medicationName: "Paracetamol",
-    quantity: 3,
-    totalPrice: 7.5,
-    date: "2026-06-01",
-    pharmacyId: "p1",
     pharmacyName: "City Pharmacy",
-    customerId: "c1",
-    customerName: "Ahmed Hassan",
+    quantity: 50,
+    notes: "New stock arrived from supplier",
+    date: "2026-06-01",
   },
   {
     id: "t2",
-    type: "purchase",
-    medicationId: "2",
+    type: "dispense",
+    inventoryId: "2",
     medicationName: "Amoxicillin",
-    quantity: 1,
-    totalPrice: 8.0,
+    pharmacyName: "City Pharmacy",
+    quantity: 5,
+    notes: "Dispensed to customer Ahmed Hassan",
     date: "2026-06-05",
-    pharmacyId: "p2",
-    pharmacyName: "Green Cross Pharmacy",
-    customerId: "c2",
-    customerName: "Sara Ali",
   },
   {
     id: "t3",
-    type: "exchange",
-    medicationId: "3",
-    medicationName: "Ibuprofen",
-    quantity: 10,
-    totalPrice: 20.0,
-    date: "2026-06-10",
-    fromPharmacyId: "p2",
-    fromPharmacyName: "Green Cross Pharmacy",
-    toPharmacyId: "p1",
-    toPharmacyName: "City Pharmacy",
-    customerId: null,
-    customerName: null,
-  },
-  {
-    id: "t4",
-    type: "exchange",
-    medicationId: "1",
+    type: "damage",
+    inventoryId: "3",
     medicationName: "Paracetamol",
-    quantity: 20,
-    totalPrice: 50.0,
-    date: "2026-06-12",
-    fromPharmacyId: "p1",
-    fromPharmacyName: "City Pharmacy",
-    toPharmacyId: "p2",
-    toPharmacyName: "Green Cross Pharmacy",
-    customerId: null,
-    customerName: null,
+    pharmacyName: "Green Cross Pharmacy",
+    quantity: 10,
+    notes: "Damaged during storage — dropped and broken",
+    date: "2026-06-10",
   },
 ];
