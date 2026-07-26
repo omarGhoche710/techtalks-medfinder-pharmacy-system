@@ -11,7 +11,7 @@ type CreatePharmacyInput = {
   userId: string;
 };
 
-export const createPharmacy = (data: CreatePharmacyInput) => {
+export const createPharmacy = async (data: CreatePharmacyInput) => {
   return db.$transaction(async (tx) => {
     const pharmacy = await tx.pharmacy.create({
       data: {
