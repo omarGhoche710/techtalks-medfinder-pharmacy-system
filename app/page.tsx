@@ -34,7 +34,7 @@ export default function Home() {
             </a>{" "}
             center.
           </p>
-          <UserButton />
+        
         </div>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
           <a
@@ -51,6 +51,7 @@ export default function Home() {
               height={16}
             />
             Deploy Now
+            <UserButton />
           </a>
           <a
             className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
