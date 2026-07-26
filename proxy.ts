@@ -1,6 +1,14 @@
-import { clerkMiddleware } from '@clerk/nextjs/server'
+// middleware.ts
 
-export default clerkMiddleware(async (auth, req) => {
+import { clerkMiddleware } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export default clerkMiddleware(async (auth, req: NextRequest) => {
+  // ✅ Logging (من الملف الأول)
+  console.log(`[${req.method}] ${req.nextUrl.pathname}`);
+
+  // ✅ Clerk Auth Check (من الملف الثاني)
   const publicPaths = [
     '/sign-in',
     '/sign-up',
@@ -11,14 +19,16 @@ export default clerkMiddleware(async (auth, req) => {
   ];
 
   const pathname = req.nextUrl.pathname;
-  
-  const isPublic = 
+
+  const isPublic =
     pathname === '/' ||
     publicPaths.some((path) => pathname.startsWith(path));
 
   if (!isPublic) {
     await auth.protect();
   }
+
+  return NextResponse.next();
 });
 
 export const config = {
