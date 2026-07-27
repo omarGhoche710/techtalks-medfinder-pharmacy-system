@@ -124,3 +124,11 @@ body {
     --foreground: #111827;
   }
 }
+
+@utility flex-center {
+  @apply flex justify-center items-center;
+}
+
+@utility auth {
+  @apply flex-center min-h-screen w-full bg-purple-100;
+}
