@@ -1,6 +1,5 @@
 import SiteFooter from "@/components/layout/SiteFooter";
-import MobileNav from "@/components/layout/MobileNav";
-import Sidebar from "@/components/layout/Sidebar";
+import SiteNavbar from "@/components/layout/SiteNavbar";
 
 export default function RootGroupLayout({
   children,
@@ -12,12 +11,11 @@ export default function RootGroupLayout({
   return (
     <main className="root">
       {modal}
-      <Sidebar />
-      <MobileNav />
+      <SiteNavbar />
       <div className="root-container">
         <div className="wrapper">{children}</div>
-        <SiteFooter />
       </div>
+      <SiteFooter />
     </main>
   );
 }
