@@ -71,14 +71,18 @@ export async function POST(req: Request) {
 
     const newUser = await createUser(user);
 
-    // Set public metadata
+    // Set public metadata (best-effort; don't fail the whole webhook if this errors)
     if (newUser) {
-      const client = await clerkClient();
-      await client.users.updateUserMetadata(id, {
-        publicMetadata: {
-          userId: newUser.id,
-        },
-      });
+      try {
+        const client = await clerkClient();
+        await client.users.updateUserMetadata(id, {
+          publicMetadata: {
+            userId: newUser.id,
+          },
+        });
+      } catch (metaErr) {
+        console.error("Failed to set Clerk public metadata:", metaErr);
+      }
     }
 
     return NextResponse.json({ message: "OK", user: newUser });
