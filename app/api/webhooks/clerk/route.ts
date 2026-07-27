@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 
-import { WebhookEvent } from "@clerk/nextjs/server";
+import { clerkClient, WebhookEvent } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { Webhook } from "svix";
@@ -9,6 +9,7 @@ import {
   createUser,
   updateUser,
   deleteUser,
+  getUserById,
 } from "@/lib/database/queries/user";
 
 export async function POST(req: Request) {
@@ -54,7 +55,6 @@ export async function POST(req: Request) {
     });
   }
 
-  const { id } = evt.data;
   const eventType = evt.type;
 
   console.log(`Webhook received: ${eventType}`);
@@ -120,6 +120,36 @@ export async function POST(req: Request) {
       message: "User deleted",
       user: deletedUser,
     });
+  }
+
+  // BACKFILL: session.created for a user that doesn't exist yet in our DB
+  // (e.g. their user.created event fired before this webhook was configured,
+  // or that delivery failed). Fetch the profile from Clerk and create it.
+  if (eventType === "session.created") {
+    const sessionUserId = evt.data.user_id;
+
+    const existingUser = await getUserById(sessionUserId);
+
+    if (!existingUser) {
+      const client = await clerkClient();
+      const clerkUser = await client.users.getUser(sessionUserId);
+
+      const newUser = await createUser({
+        clerkId: clerkUser.id,
+        username:
+          clerkUser.username || `user_${clerkUser.id.slice(0, 8)}`,
+        firstName: clerkUser.firstName,
+        lastName: clerkUser.lastName,
+        photo: clerkUser.imageUrl,
+      });
+
+      console.log(`Backfilled missing user from session.created: ${newUser.clerkId}`);
+
+      return NextResponse.json({
+        message: "User backfilled from session",
+        user: newUser,
+      });
+    }
   }
 
   console.log(`Unhandled webhook event: ${eventType}`);
