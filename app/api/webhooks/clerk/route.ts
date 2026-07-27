@@ -1,18 +1,14 @@
 /* eslint-disable camelcase */
-
-import { clerkClient, WebhookEvent } from "@clerk/nextjs/server";
+import { clerkClient } from '@clerk/nextjs/server';
+import { WebhookEvent } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { Webhook } from "svix";
 
-import {
-  createUser,
-  updateUser,
-  deleteUser,
-  getUserById,
-} from "@/lib/database/queries/user";
+import { createUser, deleteUser, updateUser } from "@/lib/database/queries/user";
 
 export async function POST(req: Request) {
+  // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
   if (!WEBHOOK_SECRET) {
@@ -21,26 +17,29 @@ export async function POST(req: Request) {
     );
   }
 
-  // Get Svix headers
+  // Get the headers
   const headerPayload = await headers();
-
   const svix_id = headerPayload.get("svix-id");
   const svix_timestamp = headerPayload.get("svix-timestamp");
   const svix_signature = headerPayload.get("svix-signature");
 
+  // If there are no headers, error out
   if (!svix_id || !svix_timestamp || !svix_signature) {
-    return new Response("Error occurred -- no svix headers", {
+    return new Response("Error occured -- no svix headers", {
       status: 400,
     });
   }
 
-  // IMPORTANT: Keep raw body for Svix verification
-  const body = await req.text();
+  // Get the body
+  const payload = await req.json();
+  const body = JSON.stringify(payload);
 
+  // Create a new Svix instance with your secret.
   const wh = new Webhook(WEBHOOK_SECRET);
 
   let evt: WebhookEvent;
 
+  // Verify the payload with the headers
   try {
     evt = wh.verify(body, {
       "svix-id": svix_id,
@@ -49,25 +48,18 @@ export async function POST(req: Request) {
     }) as WebhookEvent;
   } catch (err) {
     console.error("Error verifying webhook:", err);
-
-    return new Response("Invalid signature", {
-      status: 401,
+    return new Response("Error occured", {
+      status: 400,
     });
   }
 
+  // Get the ID and type
+  const { id } = evt.data;
   const eventType = evt.type;
 
-  console.log(`Webhook received: ${eventType}`);
-
-  // CREATE USER
+  // CREATE
   if (eventType === "user.created") {
-    const {
-      id,
-      image_url,
-      first_name,
-      last_name,
-      username,
-    } = evt.data;
+    const { id, image_url, first_name, last_name, username } = evt.data;
 
     const user = {
       clerkId: id,
@@ -79,21 +71,22 @@ export async function POST(req: Request) {
 
     const newUser = await createUser(user);
 
-    return NextResponse.json({
-      message: "User created",
-      user: newUser,
-    });
+    // Set public metadata
+    if (newUser) {
+      const client = await clerkClient();
+      await client.users.updateUserMetadata(id, {
+        publicMetadata: {
+          userId: newUser.id,
+        },
+      });
+    }
+
+    return NextResponse.json({ message: "OK", user: newUser });
   }
 
-  // UPDATE USER
+  // UPDATE
   if (eventType === "user.updated") {
-    const {
-      id,
-      image_url,
-      first_name,
-      last_name,
-      username,
-    } = evt.data;
+    const { id, image_url, first_name, last_name, username } = evt.data;
 
     const user = {
       firstName: first_name,
@@ -104,57 +97,20 @@ export async function POST(req: Request) {
 
     const updatedUser = await updateUser(id, user);
 
-    return NextResponse.json({
-      message: "User updated",
-      user: updatedUser,
-    });
+    return NextResponse.json({ message: "OK", user: updatedUser });
   }
 
-  // DELETE USER
+  // DELETE
   if (eventType === "user.deleted") {
     const { id } = evt.data;
 
     const deletedUser = await deleteUser(id!);
 
-    return NextResponse.json({
-      message: "User deleted",
-      user: deletedUser,
-    });
+    return NextResponse.json({ message: "OK", user: deletedUser });
   }
 
-  // BACKFILL: session.created for a user that doesn't exist yet in our DB
-  // (e.g. their user.created event fired before this webhook was configured,
-  // or that delivery failed). Fetch the profile from Clerk and create it.
-  if (eventType === "session.created") {
-    const sessionUserId = evt.data.user_id;
+  console.log(`Webhook with and ID of ${id} and type of ${eventType}`);
+  console.log("Webhook body:", body);
 
-    const existingUser = await getUserById(sessionUserId);
-
-    if (!existingUser) {
-      const client = await clerkClient();
-      const clerkUser = await client.users.getUser(sessionUserId);
-
-      const newUser = await createUser({
-        clerkId: clerkUser.id,
-        username:
-          clerkUser.username || `user_${clerkUser.id.slice(0, 8)}`,
-        firstName: clerkUser.firstName,
-        lastName: clerkUser.lastName,
-        photo: clerkUser.imageUrl,
-      });
-
-      console.log(`Backfilled missing user from session.created: ${newUser.clerkId}`);
-
-      return NextResponse.json({
-        message: "User backfilled from session",
-        user: newUser,
-      });
-    }
-  }
-
-  console.log(`Unhandled webhook event: ${eventType}`);
-
-  return NextResponse.json({
-    message: "Webhook received",
-  });
+  return new Response("", { status: 200 });
 }
