@@ -4,10 +4,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
-  // ✅ Logging (من الملف الأول)
   console.log(`[${req.method}] ${req.nextUrl.pathname}`);
 
-  // ✅ Clerk Auth Check (من الملف الثاني)
   const publicPaths = [
     '/',
     '/sign-in',
