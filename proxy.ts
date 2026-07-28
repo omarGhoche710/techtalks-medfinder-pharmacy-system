@@ -7,9 +7,11 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   console.log(`[${req.method}] ${req.nextUrl.pathname}`);
 
   const publicPaths = [
+    '/',
     '/sign-in',
     '/sign-up',
     '/api/webhooks/clerk',
+    '/api/search',
     '/search',
     '/pharmacies',
     '/invite',
