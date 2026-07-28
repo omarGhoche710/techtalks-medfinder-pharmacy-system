@@ -1,7 +1,8 @@
 "use client";
 
 import FilterBar from "@/components/search/FilterBar";
-import ResultListItem from "@/components/search/ResultListItem";
+import PharmacyMap from "@/components/search/PharmacyMap";
+import ResultCard from "@/components/search/ResultCard";
 import SearchBar from "@/components/search/SearchBar";
 import SearchStateView from "@/components/search/SearchStateView";
 import SortControls from "@/components/search/SortControls";
@@ -45,6 +46,7 @@ export default function SearchPageClient({
     maxPrice: null,
     availability: "all",
   });
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const lat = initialLat ?? geo.lat;
   const lng = initialLng ?? geo.lng;
@@ -89,6 +91,16 @@ export default function SearchPageClient({
     const filtered = applyFilters(results, filters, nearMe);
     return applySorting(filtered, sort, nearMe);
   }, [results, filters, sort, nearMe]);
+
+  useEffect(() => {
+    if (filteredResults.length === 0) {
+      setSelectedId(null);
+      return;
+    }
+    if (!selectedId || !filteredResults.some((r) => r.id === selectedId)) {
+      setSelectedId(filteredResults[0].id);
+    }
+  }, [filteredResults, selectedId]);
 
   const handleSearch = (searchQuery: string, useNearMe: boolean) => {
     setNearMe(useNearMe);
@@ -149,18 +161,37 @@ export default function SearchPageClient({
       )}
 
       {state === "success" && filteredResults.length > 0 && (
-        <div
-          role="list"
-          aria-label="Search results"
-          className="mx-auto flex max-w-3xl flex-col gap-3"
-        >
-          {filteredResults.map((result) => (
-            <ResultListItem
-              key={result.id}
-              result={result}
-              nearMe={nearMe}
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start">
+          <div
+            role="list"
+            aria-label="Search results"
+            className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto pr-1"
+          >
+            {filteredResults.map((result) => (
+              <ResultCard
+                key={result.id}
+                result={result}
+                nearMe={nearMe}
+                isSelected={selectedId === result.id}
+                onSelect={() => {
+                  setSelectedId(result.id);
+                  document
+                    .getElementById(`result-${result.id}`)
+                    ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="sticky top-4 h-[70vh]">
+            <PharmacyMap
+              results={filteredResults}
+              selectedId={selectedId}
+              userLat={nearMe ? lat : undefined}
+              userLng={nearMe ? lng : undefined}
+              onSelect={setSelectedId}
             />
-          ))}
+          </div>
         </div>
       )}
 
