@@ -190,7 +190,7 @@ model Invitation {
 }
 
 // ============================================
-// TABLE 5: PHARMACY OPENING HOURS
+// TABLE 5: PHARMACY OPENING HOURS  
 // ============================================
 
 model Pharmacy_Days {

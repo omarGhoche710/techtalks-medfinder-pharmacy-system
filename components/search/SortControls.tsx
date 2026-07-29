@@ -6,6 +6,7 @@ type SortControlsProps = {
   sort: SortOption;
   nearMe: boolean;
   onChange: (sort: SortOption) => void;
+  disabled?: boolean;
 };
 
 const sortOptions: { value: SortOption; label: string; nearMeOnly?: boolean }[] =
@@ -19,6 +20,7 @@ export default function SortControls({
   sort,
   nearMe,
   onChange,
+  disabled = false,
 }: SortControlsProps) {
   const options = sortOptions.filter((o) => !o.nearMeOnly || nearMe);
 
@@ -29,7 +31,8 @@ export default function SortControls({
         aria-label="Sort results"
         value={sort}
         onChange={(e) => onChange(e.target.value as SortOption)}
-        className="input-field"
+        className={`input-field ${disabled ? "opacity-50 pointer-events-none" : ""}`}
+        disabled={disabled}
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>

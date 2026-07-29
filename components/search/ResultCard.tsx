@@ -36,16 +36,29 @@ export default function ResultCard({
       aria-label={`${result.medicineName} at ${result.pharmacy.name}`}
       className={`card-interactive ${isSelected ? "card-selected" : ""}`}
     >
-      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h3 className="text-base font-semibold text-gray-900">
             {result.medicineName}
           </h3>
           <p className="text-xs text-gray-500">{result.medicineCode}</p>
         </div>
-        <span className="price-text">
-          ${result.price.toFixed(2)}
-        </span>
+        <div className="text-right">
+          {result.originalPrice && result.originalPrice > result.price ? (
+            <div className="flex items-baseline gap-2">
+              <span className="price-text text-lg font-semibold text-[var(--primary)]">
+                ${result.price.toFixed(2)}
+              </span>
+              <span className="text-sm text-gray-400 line-through">
+                ${result.originalPrice.toFixed(2)}
+              </span>
+            </div>
+          ) : (
+            <span className="price-text text-lg font-semibold text-[var(--primary)]">
+              ${result.price.toFixed(2)}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="mt-3 space-y-1">
@@ -62,6 +75,23 @@ export default function ResultCard({
           {stockLabel(result.stock)}
           {result.stock !== "out_of_stock" && ` (${result.quantity})`}
         </span>
+        {typeof result.daysToExpiry === "number" && (
+          <span
+            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+              result.daysToExpiry <= 0
+                ? "bg-red-100 text-red-800"
+                : result.daysToExpiry <= 7
+                ? "bg-amber-100 text-amber-800"
+                : "badge-muted"
+            }`}
+          >
+            {result.daysToExpiry <= 0
+              ? "Expired"
+              : result.daysToExpiry === 1
+              ? "Expiring in 1 day"
+              : `Expiring in ${result.daysToExpiry} days`}
+          </span>
+        )}
         {nearMe && result.distanceKm !== null && (
           <span className="badge-muted">
             {formatDistance(result.distanceKm)}

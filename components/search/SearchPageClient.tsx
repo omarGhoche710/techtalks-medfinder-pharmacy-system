@@ -50,6 +50,7 @@ export default function SearchPageClient({
 
   const lat = initialLat ?? geo.lat;
   const lng = initialLng ?? geo.lng;
+  const isLoading = state === "loading";
 
   const runSearch = useCallback(
     async (searchQuery: string, useNearMe: boolean) => {
@@ -82,9 +83,11 @@ export default function SearchPageClient({
   );
 
   useEffect(() => {
-    if (initialQuery) {
-      runSearch(initialQuery, initialNearMe);
-    }
+    if (!initialQuery) return;
+
+    // Call runSearch asynchronously to avoid synchronous setState inside effect
+    const id = window.setTimeout(() => runSearch(initialQuery, initialNearMe), 0);
+    return () => window.clearTimeout(id);
   }, [initialQuery, initialNearMe, runSearch]);
 
   const filteredResults = useMemo(() => {
@@ -93,13 +96,27 @@ export default function SearchPageClient({
   }, [results, filters, sort, nearMe]);
 
   useEffect(() => {
+    // Avoid calling setState synchronously inside the effect body — schedule asynchronously
+    let timer: number | undefined;
+
     if (filteredResults.length === 0) {
-      setSelectedId(null);
-      return;
+      timer = window.setTimeout(() => setSelectedId(null), 0);
+      return () => {
+        if (timer) window.clearTimeout(timer);
+      };
     }
-    if (!selectedId || !filteredResults.some((r) => r.id === selectedId)) {
-      setSelectedId(filteredResults[0].id);
+
+    const shouldSelectFirst =
+      !selectedId || !filteredResults.some((r) => r.id === selectedId);
+
+    if (shouldSelectFirst) {
+      const idToSelect = filteredResults[0].id;
+      timer = window.setTimeout(() => setSelectedId(idToSelect), 0);
     }
+
+    return () => {
+      if (timer) window.clearTimeout(timer);
+    };
   }, [filteredResults, selectedId]);
 
   const handleSearch = (searchQuery: string, useNearMe: boolean) => {
@@ -133,7 +150,7 @@ export default function SearchPageClient({
         )}
       </div>
 
-      {state === "success" && (
+      {(state === "success" || isLoading) && (
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-gray-600">
             <span className="font-semibold text-gray-900">
@@ -150,8 +167,9 @@ export default function SearchPageClient({
               filters={filters}
               nearMe={nearMe}
               onChange={setFilters}
+              disabled={isLoading}
             />
-            <SortControls sort={sort} nearMe={nearMe} onChange={setSort} />
+            <SortControls sort={sort} nearMe={nearMe} onChange={setSort} disabled={isLoading} />
           </div>
         </div>
       )}
@@ -160,7 +178,7 @@ export default function SearchPageClient({
         <SearchStateView state="empty" query={query} />
       )}
 
-      {state === "success" && filteredResults.length > 0 && (
+      {filteredResults.length > 0 && (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start">
           <div
             role="list"
@@ -183,7 +201,7 @@ export default function SearchPageClient({
             ))}
           </div>
 
-          <div className="sticky top-4 h-[70vh]">
+          <div className="sticky top-4 h-[70vh] relative">
             <PharmacyMap
               results={filteredResults}
               selectedId={selectedId}
@@ -191,6 +209,14 @@ export default function SearchPageClient({
               userLng={nearMe ? lng : undefined}
               onSelect={setSelectedId}
             />
+            {isLoading && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60">
+                <div className="flex flex-col items-center">
+                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-[var(--primary)]" />
+                  <p className="mt-2 text-sm text-gray-700">Loading map…</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

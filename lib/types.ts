@@ -16,10 +16,12 @@ export type SearchResult = {
   medicineCode: string;
   pharmacy: Pharmacy;
   price: number;
+  originalPrice?: number;
   stock: StockStatus;
   quantity: number;
   distanceKm: number | null;
   description: string;
+  daysToExpiry?: number | null;
 };
 
 export type SearchState = "idle" | "loading" | "success" | "empty" | "error";

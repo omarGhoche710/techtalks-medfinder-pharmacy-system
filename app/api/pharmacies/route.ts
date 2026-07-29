@@ -1,13 +1,12 @@
-// app/api/pharmacies/route.ts
-
 import { auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/db";
 import { createPharmacy } from "@/lib/database/queries/pharmacy";
+import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
     const { userId: clerkId } = await auth();
+
     if (!clerkId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -26,9 +25,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    console.error("createPharmacy error:", error);
+    console.error("POST /api/pharmacies error:", error);
     return NextResponse.json(
-      { error: "Failed to create pharmacy" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

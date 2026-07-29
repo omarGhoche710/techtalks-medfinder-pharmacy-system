@@ -6,6 +6,7 @@ type FilterBarProps = {
   filters: FilterState;
   nearMe: boolean;
   onChange: (filters: FilterState) => void;
+  disabled?: boolean;
 };
 
 const availabilityOptions: { value: StockStatus | "all"; label: string }[] = [
@@ -33,6 +34,7 @@ export default function FilterBar({
   filters,
   nearMe,
   onChange,
+  disabled = false,
 }: FilterBarProps) {
   return (
     <div
@@ -52,7 +54,8 @@ export default function FilterBar({
                 maxDistance: e.target.value ? Number(e.target.value) : null,
               })
             }
-            className="input-field"
+            className={`input-field ${disabled ? "opacity-50 pointer-events-none" : ""}`}
+            disabled={disabled}
           >
             {distanceOptions.map((opt) => (
               <option key={String(opt.value)} value={opt.value ?? ""}>
@@ -74,7 +77,8 @@ export default function FilterBar({
               maxPrice: e.target.value ? Number(e.target.value) : null,
             })
           }
-          className="input-field"
+          className={`input-field ${disabled ? "opacity-50 pointer-events-none" : ""}`}
+          disabled={disabled}
         >
           {priceOptions.map((opt) => (
             <option key={String(opt.value)} value={opt.value ?? ""}>
@@ -95,7 +99,8 @@ export default function FilterBar({
               availability: e.target.value as StockStatus | "all",
             })
           }
-          className="input-field"
+          className={`input-field ${disabled ? "opacity-50 pointer-events-none" : ""}`}
+          disabled={disabled}
         >
           {availabilityOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>

@@ -7,7 +7,7 @@ import { navLinks } from "@/lib/nav-links";
 function MedFinderLogo() {
   return (
     <svg className="h-7 w-7" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <circle cx="16" cy="16" r="3" fill="currentColor" className="text-[var(--primary)]" />
+      <circle cx="16" cy="16" r="3" fill="currentColor" className="text-primary" />
       {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
         <rect
           key={angle}
@@ -17,7 +17,7 @@ function MedFinderLogo() {
           height="8"
           rx="1.5"
           fill="currentColor"
-          className="text-[var(--primary)]"
+          className="text-primary"
           transform={`rotate(${angle} 16 16)`}
         />
       ))}

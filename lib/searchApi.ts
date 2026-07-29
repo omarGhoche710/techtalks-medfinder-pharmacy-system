@@ -1,5 +1,13 @@
 import type { SearchParams, SearchResult, Suggestion } from "@/lib/types";
 
+type SearchApiResponse = {
+  results: SearchResult[];
+  query?: string;
+  nearMe?: boolean;
+  total?: number;
+  error?: string;
+};
+
 function resultsToSuggestions(results: SearchResult[]): Suggestion[] {
   const medicineNames = new Set<string>();
   const pharmacyNames = new Set<string>();
@@ -31,12 +39,16 @@ export async function fetchSearchResults(
   if (params.lng !== undefined) url.searchParams.set("lng", String(params.lng));
 
   const res = await fetch(url.toString());
+  const payload = (await res.json().catch(() => ({}))) as Partial<SearchApiResponse>;
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error ?? "Search failed");
+    throw new Error(payload.error ?? "Search failed");
   }
-  const data = await res.json();
-  return data.results;
+
+  if (!payload.results || !Array.isArray(payload.results)) {
+    return [];
+  }
+
+  return payload.results as SearchResult[];
 }
 
 export async function fetchSuggestions(

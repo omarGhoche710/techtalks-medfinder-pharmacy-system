@@ -54,7 +54,7 @@ export default function SearchBar({
   const [suggestLoading, setSuggestLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const debounceRef = useRef<number | null>(null);
 
   const isLarge = size === "large";
 
@@ -92,12 +92,13 @@ export default function SearchBar({
 
   useEffect(() => {
     if (!query.trim()) {
-      setSuggestions([]);
-      return;
+      // Clear suggestions asynchronously to avoid synchronous setState inside effect
+      const clearId = window.setTimeout(() => setSuggestions([]), 0);
+      return () => window.clearTimeout(clearId);
     }
 
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(async () => {
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    debounceRef.current = window.setTimeout(async () => {
       setSuggestLoading(true);
       try {
         const results = await fetchSuggestions({
@@ -112,7 +113,7 @@ export default function SearchBar({
       } finally {
         setSuggestLoading(false);
       }
-    }, 200);
+    }, 250);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -199,6 +200,9 @@ export default function SearchBar({
             aria-expanded={isOpen}
             aria-autocomplete="list"
             aria-controls="search-suggestions"
+            aria-activedescendant={
+              activeIndex >= 0 ? `search-suggestion-${activeIndex}` : undefined
+            }
             role="combobox"
             className={isLarge ? "input-search-lg" : "input-search-sm"}
           />
@@ -224,7 +228,23 @@ export default function SearchBar({
           {showNearMe && (
             <NearMeToggle
               enabled={nearMe}
-              onChange={setNearMe}
+              onChange={(enabled) => {
+                setNearMe(enabled);
+                // Trigger a new search when nearMe is toggled
+                if (query.trim()) {
+                  const params = new URLSearchParams();
+                  params.set("q", query);
+                  params.set("nearMe", String(enabled));
+                  if (enabled && lat !== undefined && lng !== undefined) {
+                    params.set("lat", String(lat));
+                    params.set("lng", String(lng));
+                  }
+                  window.history.replaceState(null, "", `/search?${params.toString()}`);
+                  if (onSearch) {
+                    onSearch(query, enabled);
+                  }
+                }
+              }}
               loading={geoLoading && nearMe}
             />
           )}
@@ -232,7 +252,31 @@ export default function SearchBar({
             type="button"
             onClick={() => query.trim() && navigateToSearch(query.trim())}
             className={isLarge ? "btn-primary-lg" : "btn-primary-sm"}
+            disabled={geoLoading && nearMe}
+            aria-disabled={geoLoading && nearMe}
           >
+            {geoLoading && nearMe ? (
+              <svg
+                className="-ml-1 mr-2 h-4 w-4 animate-spin text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                />
+              </svg>
+            ) : null}
             Search
           </button>
         </div>
@@ -244,18 +288,23 @@ export default function SearchBar({
           role="listbox"
           aria-label="Search suggestions"
           className="dropdown-panel"
+          aria-live="polite"
         >
           {suggestLoading ? (
             <li className="px-4 py-3 text-sm text-gray-500">Loading…</li>
           ) : suggestions.length > 0 ? (
             suggestions.map((suggestion, index) => (
               <li
-                key={`${suggestion.type}-${suggestion.text}`}
+                id={`search-suggestion-${index}`}
+                key={`${suggestion.type}-${suggestion.text}-${index}`}
                 role="option"
                 aria-selected={index === activeIndex}
                 onMouseEnter={() => setActiveIndex(index)}
                 onMouseDown={(e) => e.preventDefault()}
-                onClick={() => selectSuggestion(suggestion.text)}
+                onClick={() => {
+                  selectSuggestion(suggestion.text);
+                  inputRef.current?.focus();
+                }}
                 className={`flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors ${
                   index === activeIndex ? "bg-blue-50" : "hover:bg-gray-50"
                 }`}
