@@ -11,8 +11,12 @@ export async function requirePharmacyAccess(pharmacyId: string) {
   const user = await db.user.findUnique({ where: { clerkId } });
   if (!user) redirect('/sign-in');
 
+  if (user.role === 'ADMIN') {
+    return { user, role: 'ADMIN' };
+  }
+
   const role = await getMembershipRole(user.id, pharmacyId);
-  if (!role) redirect('/unauthorized'); 
+  if (!role) redirect('/unauthorized');
 
   return { user, role };
 }

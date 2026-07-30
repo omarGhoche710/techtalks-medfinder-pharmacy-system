@@ -12,7 +12,7 @@ export async function DELETE(
     const { role } = await requirePharmacyAccess(pharmacyId);
 
     // ✅ Only OWNER can delete employees
-    if (role !== "OWNER") {
+    if (role !== "OWNER" && role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

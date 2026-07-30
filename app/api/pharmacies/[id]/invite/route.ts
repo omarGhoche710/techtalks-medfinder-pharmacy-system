@@ -26,7 +26,7 @@ export async function POST(
     const { role } = await requirePharmacyAccess(pharmacyId);
 
     // ✅ Only OWNER can invite
-    if (role !== "OWNER") {
+    if (role !== "OWNER" && role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
