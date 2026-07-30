@@ -124,6 +124,8 @@ model Pharmacy {
 
   exceptions PharmacyException[]
 
+  @@index([lat, lng])
+
   @@map("pharmacies")
 }
 
@@ -154,6 +156,8 @@ model PharmacyMembership {
   inviter User? @relation("SentMemberships", fields: [invited_by], references: [id])
 
   @@unique([user_id, pharmacy_id])
+  @@index([pharmacy_id]) 
+  @@index([is_active]) 
 
   @@map("pharmacy_memberships")
 }
@@ -185,6 +189,11 @@ model Invitation {
   pharmacy Pharmacy @relation(fields: [pharmacy_id], references: [id])
 
   inviter User @relation("SentInvitations", fields: [invited_by], references: [id])
+
+  @@index([pharmacy_id])    
+  @@index([invited_email]) 
+  @@index([status])         
+  @@index([expires_at]) 
 
   @@map("invitations")
 }
@@ -292,6 +301,12 @@ model Medication {
   transactions Transaction[]
 
   transfers Transfer[]
+
+  @@index([pharmacy_id])     
+  @@index([name])            
+  @@index([status])          
+  @@index([date_expired])    
+  @@index([is_transferable]) 
 
   @@map("medications")
 }
