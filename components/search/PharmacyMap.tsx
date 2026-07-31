@@ -2,6 +2,8 @@
 
 import type { SearchResult } from "@/lib/types";
 import { useMemo } from "react";
+import { DEFAULT_LOCATION } from "@/data/pharmacies";
+import { haversineKm } from "@/lib/geo";
 
 type PharmacyMapProps = {
   results: SearchResult[];
@@ -20,28 +22,30 @@ type MapPoint = {
 
 function projectPoints(
   results: SearchResult[],
-  userLat?: number,
-  userLng?: number
+  userLat: number | undefined,
+  userLng: number | undefined,
+  minLat: number,
+  maxLat: number,
+  minLng: number,
+  maxLng: number
 ): MapPoint[] {
-  const lats = results.map((r) => r.pharmacy.lat);
-  const lngs = results.map((r) => r.pharmacy.lng);
-  if (userLat !== undefined && userLng !== undefined) {
-    lats.push(userLat);
-    lngs.push(userLng);
-  }
-
-  const minLat = Math.min(...lats) - 0.005;
-  const maxLat = Math.max(...lats) + 0.005;
-  const minLng = Math.min(...lngs) - 0.005;
-  const maxLng = Math.max(...lngs) + 0.005;
-
   const toXY = (lat: number, lng: number) => ({
-    x: ((lng - minLng) / (maxLng - minLng)) * 100,
-    y: 100 - ((lat - minLat) / (maxLat - minLat)) * 100,
+    x: Math.min(
+      100,
+      Math.max(0, ((lng - minLng) / (maxLng - minLng)) * 100)
+    ),
+    y: Math.min(
+      100,
+      Math.max(0, 100 - ((lat - minLat) / (maxLat - minLat)) * 100)
+    ),
   });
 
-  const points: MapPoint[] = results.map((result) => {
-    const { x, y } = toXY(result.pharmacy.lat, result.pharmacy.lng);
+  const points = results.map((result) => {
+    const { x, y } = toXY(
+      result.pharmacy.lat,
+      result.pharmacy.lng
+    );
+
     return {
       id: result.id,
       label: result.pharmacy.name,
@@ -52,7 +56,13 @@ function projectPoints(
 
   if (userLat !== undefined && userLng !== undefined) {
     const { x, y } = toXY(userLat, userLng);
-    points.push({ id: "user", label: "Your location", x, y });
+
+    points.push({
+      id: "user",
+      label: "Your location",
+      x,
+      y,
+    });
   }
 
   return points;
@@ -65,69 +75,309 @@ export default function PharmacyMap({
   userLng,
   onSelect,
 }: PharmacyMapProps) {
-  const points = useMemo(
-    () => projectPoints(results, userLat, userLng),
-    [results, userLat, userLng]
-  );
 
-  const centerLat =
-    userLat ?? results.reduce((sum, r) => sum + r.pharmacy.lat, 0) / results.length;
-  const centerLng =
-    userLng ?? results.reduce((sum, r) => sum + r.pharmacy.lng, 0) / results.length;
+  const {
+    points,
+    centerLat,
+    centerLng,
+    minLat,
+    maxLat,
+    minLng,
+    maxLng,
+    allCoords,
+  } = useMemo(() => {
+
+    const MAX_NEAR_KM = 200;
+
+
+    // pharmacies used for map center
+    let visibleResults = results;
+
+
+    if (userLat !== undefined && userLng !== undefined) {
+      const filtered = results.filter((r) =>
+        haversineKm(
+          userLat,
+          userLng,
+          r.pharmacy.lat,
+          r.pharmacy.lng
+        ) <= MAX_NEAR_KM
+      );
+
+
+      if (filtered.length > 0) {
+        visibleResults = filtered;
+      }
+    }
+
+
+    const coords = visibleResults.map((r) => ({
+      lat: r.pharmacy.lat,
+      lng: r.pharmacy.lng,
+    }));
+
+
+    if (userLat !== undefined && userLng !== undefined) {
+      coords.push({
+        lat: userLat,
+        lng: userLng,
+      });
+    }
+
+
+
+    let _minLat: number;
+    let _maxLat: number;
+    let _minLng: number;
+    let _maxLng: number;
+
+
+    if (coords.length === 0) {
+
+      const lat = DEFAULT_LOCATION.lat;
+      const lng = DEFAULT_LOCATION.lng;
+
+      _minLat = lat - 0.03;
+      _maxLat = lat + 0.03;
+      _minLng = lng - 0.04;
+      _maxLng = lng + 0.04;
+
+    } else {
+
+      _minLat = Math.min(...coords.map(c => c.lat));
+      _maxLat = Math.max(...coords.map(c => c.lat));
+
+      _minLng = Math.min(...coords.map(c => c.lng));
+      _maxLng = Math.max(...coords.map(c => c.lng));
+
+
+      const latPadding =
+        Math.max(0.01, (_maxLat - _minLat) * 0.15);
+
+      const lngPadding =
+        Math.max(0.01, (_maxLng - _minLng) * 0.15);
+
+
+      _minLat -= latPadding;
+      _maxLat += latPadding;
+
+      _minLng -= lngPadding;
+      _maxLng += lngPadding;
+
+    }
+
+
+    const _centerLat =
+      (_minLat + _maxLat) / 2;
+
+    const _centerLng =
+      (_minLng + _maxLng) / 2;
+
+
+
+    const _points = projectPoints(
+      visibleResults,
+      userLat,
+      userLng,
+      _minLat,
+      _maxLat,
+      _minLng,
+      _maxLng
+    );
+
+
+    return {
+      points: _points,
+      centerLat: _centerLat,
+      centerLng: _centerLng,
+      minLat: _minLat,
+      maxLat: _maxLat,
+      minLng: _minLng,
+      maxLng: _maxLng,
+      allCoords: coords,
+    };
+
+
+  }, [
+    results,
+    userLat,
+    userLng
+  ]);
+
+
+
+  const iframeSrc =
+    `https://www.openstreetmap.org/export/embed.html?bbox=` +
+    `${minLng}%2C${minLat}%2C${maxLng}%2C${maxLat}` +
+    `&layer=mapnik`;
+
+
 
   return (
     <div
-      className="relative h-full min-h-[320px] overflow-hidden rounded-xl border border-gray-200 bg-[#e8f0e8]"
-      aria-label="Pharmacy map"
-      role="region"
+      className="
+      relative 
+      h-full 
+      min-h-[320px]
+      overflow-hidden
+      rounded-xl
+      border
+      border-gray-200
+      bg-[#e8f0e8]
+      "
     >
+
       <iframe
         title="OpenStreetMap"
-        className="pointer-events-none absolute inset-0 h-full w-full border-0 opacity-60"
-        src={`https://www.openstreetmap.org/export/embed.html?bbox=${centerLng - 0.04}%2C${centerLat - 0.03}%2C${centerLng + 0.04}%2C${centerLat + 0.03}&layer=mapnik`}
+        className="
+        pointer-events-none
+        absolute
+        inset-0
+        h-full
+        w-full
+        border-0
+        opacity-60
+        "
+        src={iframeSrc}
         loading="lazy"
       />
 
+
+
+      {/* Debug */}
+      <div
+        className="
+        absolute
+        left-2
+        top-2
+        z-20
+        rounded-md
+        bg-white/90
+        p-2
+        text-xs
+        shadow
+        "
+      >
+        <div>
+          Center:
+          {centerLat.toFixed(5)},
+          {centerLng.toFixed(5)}
+        </div>
+
+        <div>
+          Points:
+          {points.length}
+        </div>
+
+      </div>
+
+
+
+      {/* Markers */}
+
       <div className="absolute inset-0">
-        {points.map((point) => {
-          const isUser = point.id === "user";
-          const isSelected = point.id === selectedId;
+
+
+        {points.map(point => {
+
+          const isUser =
+            point.id === "user";
+
+          const selected =
+            point.id === selectedId;
+
+
 
           if (isUser) {
+
             return (
               <div
                 key={point.id}
-                className="absolute -translate-x-1/2 -translate-y-1/2"
-                style={{ left: `${point.x}%`, top: `${point.y}%` }}
-                title={point.label}
+                className="
+                absolute
+                -translate-x-1/2
+                -translate-y-1/2
+                "
+                style={{
+                  left: `${point.x}%`,
+                  top: `${point.y}%`
+                }}
               >
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#2563eb] ring-4 ring-[#2563eb]/25" />
+
+                <span
+                  className="
+                  block
+                  h-4
+                  w-4
+                  rounded-full
+                  bg-blue-600
+                  ring-4
+                  ring-blue-300/40
+                  "
+                />
+
               </div>
             );
+
           }
 
+
+
           return (
+
             <button
               key={point.id}
               type="button"
               title={point.label}
-              aria-label={point.label}
-              aria-pressed={isSelected}
-              onClick={() => onSelect(point.id)}
-              className="absolute -translate-x-1/2 -translate-y-full"
-              style={{ left: `${point.x}%`, top: `${point.y}%` }}
+              onClick={() =>
+                onSelect(point.id)
+              }
+              className="
+              absolute
+              -translate-x-1/2
+              -translate-y-full
+              "
+              style={{
+                left: `${point.x}%`,
+                top: `${point.y}%`
+              }}
             >
+
               <span
-                className={`flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-xs font-bold text-white shadow-md transition-transform hover:scale-110 ${
-                  isSelected ? "scale-110 bg-[#2563eb]" : "bg-red-500"
-                }`}
+                className={`
+                flex
+                h-7
+                w-7
+                items-center
+                justify-center
+                rounded-full
+                border-2
+                border-white
+                text-xs
+                font-bold
+                text-white
+                shadow-md
+                ${selected
+                    ? "bg-blue-600 scale-110"
+                    : "bg-red-500"
+                  }
+                `}
               >
                 Rx
               </span>
+
+
             </button>
+
           );
+
+
         })}
+
+
       </div>
+
+
     </div>
   );
 }

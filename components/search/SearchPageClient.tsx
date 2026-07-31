@@ -47,9 +47,13 @@ export default function SearchPageClient({
     availability: "all",
   });
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [suppressFullLoading, setSuppressFullLoading] = useState(false);
 
   const lat = initialLat ?? geo.lat;
   const lng = initialLng ?? geo.lng;
+  // normalize possible `null` from useGeolocation to `undefined` for child props / API
+  const searchLat = lat ?? undefined;
+  const searchLng = lng ?? undefined;
   const isLoading = state === "loading";
 
   const runSearch = useCallback(
@@ -68,18 +72,20 @@ export default function SearchPageClient({
         const data = await fetchSearchResults({
           query: searchQuery,
           nearMe: useNearMe,
-          lat: useNearMe ? lat : undefined,
-          lng: useNearMe ? lng : undefined,
+          lat: useNearMe ? searchLat : undefined,
+          lng: useNearMe ? searchLng : undefined,
         });
         setResults(data);
         setState(data.length > 0 ? "success" : "empty");
+        setSuppressFullLoading(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Search failed");
         setState("error");
         setResults([]);
+        setSuppressFullLoading(false);
       }
     },
-    [lat, lng]
+    [searchLat, searchLng]
   );
 
   useEffect(() => {
@@ -120,6 +126,8 @@ export default function SearchPageClient({
   }, [filteredResults, selectedId]);
 
   const handleSearch = (searchQuery: string, useNearMe: boolean) => {
+    const togglingNear = useNearMe !== nearMe;
+    if (togglingNear) setSuppressFullLoading(true);
     setNearMe(useNearMe);
     const params = new URLSearchParams();
     params.set("q", searchQuery);
@@ -139,8 +147,8 @@ export default function SearchPageClient({
           initialQuery={query}
           initialNearMe={nearMe}
           onSearch={handleSearch}
-          lat={lat}
-          lng={lng}
+          lat={searchLat}
+          lng={searchLng}
           geoLoading={geo.loading}
         />
         {geo.error && nearMe && (
@@ -159,7 +167,7 @@ export default function SearchPageClient({
             result{filteredResults.length !== 1 ? "s" : ""} for &ldquo;{query}
             &rdquo;
             {nearMe && (
-              <span className="ml-1 text-[var(--primary)]">· Near Me</span>
+              <span className="ml-1 text-primary">· Near Me</span>
             )}
           </p>
           <div className="flex flex-wrap items-center gap-4">
@@ -201,18 +209,18 @@ export default function SearchPageClient({
             ))}
           </div>
 
-          <div className="sticky top-4 h-[70vh] relative">
+          <div className="sticky top-4 h-[70vh]">
             <PharmacyMap
               results={filteredResults}
               selectedId={selectedId}
-              userLat={nearMe ? lat : undefined}
-              userLng={nearMe ? lng : undefined}
+              userLat={nearMe ? searchLat : undefined}
+              userLng={nearMe ? searchLng : undefined}
               onSelect={setSelectedId}
             />
-            {isLoading && (
+            {isLoading && !suppressFullLoading && (
               <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60">
                 <div className="flex flex-col items-center">
-                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-[var(--primary)]" />
+                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-primary" />
                   <p className="mt-2 text-sm text-gray-700">Loading map…</p>
                 </div>
               </div>
@@ -221,7 +229,7 @@ export default function SearchPageClient({
         </div>
       )}
 
-      {state !== "success" && (
+      {state !== "success" && !(state === "loading" && suppressFullLoading) && (
         <SearchStateView
           state={state}
           query={query}
