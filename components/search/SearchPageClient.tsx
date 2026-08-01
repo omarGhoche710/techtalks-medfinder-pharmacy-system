@@ -101,9 +101,11 @@ export default function SearchPageClient({
 
   useEffect(() => {
     if (!initialQuery) return;
+    // Wait for geolocation to resolve if Near Me is enabled
+    if (initialNearMe && !geo.resolved) return;
     const id = window.setTimeout(() => runSearch(initialQuery, initialNearMe, 1), 0);
     return () => window.clearTimeout(id);
-  }, [initialQuery, initialNearMe, runSearch]);
+  }, [initialQuery, initialNearMe, geo.resolved, runSearch]);
 
   // Server already returns the correctly filtered + sorted page, so we just
   // re-apply client-side filters (price / availability / distance slider) and
@@ -143,7 +145,7 @@ export default function SearchPageClient({
     const params = new URLSearchParams();
     params.set("q", searchQuery);
     params.set("nearMe", String(useNearMe));
-    if (useNearMe) {
+    if (useNearMe && lat !== undefined && lng !== undefined) {
       params.set("lat", String(lat));
       params.set("lng", String(lng));
     }
