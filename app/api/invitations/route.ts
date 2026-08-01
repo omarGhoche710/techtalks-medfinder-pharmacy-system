@@ -191,3 +191,84 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+// =====================================================
+// GET
+// List Invitations
+//
+// Query:
+// ?pharmacy_id=
+//
+// Returns all invitations for a pharmacy
+// ordered by newest first.
+// =====================================================
+
+export async function GET(req: NextRequest) {
+  try {
+    const pharmacy_id = req.nextUrl.searchParams.get("pharmacy_id");
+
+    // --------------------------------------
+    // Validate Query Parameter
+    // --------------------------------------
+
+    if (!pharmacy_id) {
+      return NextResponse.json(
+        {
+          message: "pharmacy_id is required.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    // --------------------------------------
+    // Pharmacy Exists?
+    // --------------------------------------
+
+    const pharmacy = await db.pharmacy.findUnique({
+      where: {
+        id: pharmacy_id,
+      },
+    });
+
+    if (!pharmacy) {
+      return NextResponse.json(
+        {
+          message: "Pharmacy not found.",
+        },
+        {
+          status: 404,
+        },
+      );
+    }
+
+    // --------------------------------------
+    // Fetch Invitations
+    // --------------------------------------
+
+    const invitations = await db.invitation.findMany({
+      where: {
+        pharmacy_id,
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+    });
+
+    return NextResponse.json(invitations, {
+      status: 200,
+    });
+  } catch (error) {
+    handleError(error);
+
+    return NextResponse.json(
+      {
+        message: "Failed to fetch invitations.",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
+}
