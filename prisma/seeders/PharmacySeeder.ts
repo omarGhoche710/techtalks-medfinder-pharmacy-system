@@ -3,7 +3,7 @@ import { faker } from "@faker-js/faker";
 
 /**
  * Seeds the `pharmacies` table.
- * The first few users are treated as pharmacy owners (`created_by`).
+ * Generates pharmacies inside Lebanon.
  */
 export async function seedPharmacies(
   prisma: PrismaClient,
@@ -11,7 +11,7 @@ export async function seedPharmacies(
 ): Promise<Pharmacy[]> {
   console.log("🌱 Seeding pharmacies...");
 
-  const owners = users.slice(0, 4); // first 4 users act as pharmacy owners
+  const owners = users.slice(0, 4); 
   const pharmacies: Pharmacy[] = [];
 
   for (const owner of owners) {
@@ -20,12 +20,25 @@ export async function seedPharmacies(
         name: `${faker.company.name()} Pharmacy`,
         address: faker.location.streetAddress({ useFullAddress: true }),
         phone: faker.phone.number(),
-        lat: faker.location.latitude(),
-        lng: faker.location.longitude(),
+
+        // Lebanon coordinates
+        lat: faker.number.float({
+          min: 33.05,
+          max: 34.70,
+          fractionDigits: 6,
+        }),
+
+        lng: faker.number.float({
+          min: 35.10,
+          max: 36.65,
+          fractionDigits: 6,
+        }),
+
         is_approved: faker.datatype.boolean(0.8),
         created_by: owner.id,
       },
     });
+
     pharmacies.push(pharmacy);
   }
 

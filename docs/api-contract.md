@@ -869,3 +869,184 @@ GET /api/search?name=Ibuprofen&lat=33.8938&lng=35.5018&radius=5
 - When no pharmacies are found, an empty array is returned (not a 404 error)
 
 ---
+
+## Memberships
+
+### `GET /api/memberships`
+
+Returns a list of memberships — pharmacists who belong to a pharmacy.
+
+**Request — Query Parameters**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| pharmacyId | string | ❌ No | Filter memberships by pharmacy ID |
+| userId | string | ❌ No | Filter memberships by pharmacist user ID |
+
+**Examples**
+```
+GET /api/memberships
+GET /api/memberships?pharmacyId=p1
+GET /api/memberships?userId=u1
+```
+
+**Response — Success (200)**
+```json
+[
+  {
+    "id": "m1",
+    "pharmacyId": "p1",
+    "pharmacyName": "City Pharmacy",
+    "userId": "u1",
+    "userFullName": "Ahmed Hassan",
+    "userEmail": "ahmed@example.com",
+    "role": "pharmacist",
+    "status": "active",
+    "joinedAt": "2026-06-01"
+  }
+]
+```
+
+**Response — Fields**
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Unique identifier for the membership |
+| pharmacyId | string | ID of the pharmacy the pharmacist belongs to |
+| pharmacyName | string | Name of the pharmacy |
+| userId | string | ID of the pharmacist user |
+| userFullName | string | Full name of the pharmacist |
+| userEmail | string | Email address of the pharmacist |
+| role | string | Role of the member — always `pharmacist` for now |
+| status | string | Membership status: `active` or `inactive` |
+| joinedAt | string | Date the pharmacist joined the pharmacy (YYYY-MM-DD) |
+
+---
+
+## Invitations
+
+### `POST /api/invitations`
+
+Creates a new invitation — a pharmacy owner invites a pharmacist to join their pharmacy via email.
+
+**Request Body**
+```json
+{
+  "pharmacyId": "p1",
+  "inviteeEmail": "newpharmacist@example.com",
+  "role": "pharmacist"
+}
+```
+
+**Request — Fields**
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| pharmacyId | string | ✅ Yes | ID of the pharmacy sending the invitation |
+| inviteeEmail | string | ✅ Yes | Email address of the pharmacist being invited |
+| role | string | ✅ Yes | Role being assigned — `pharmacist` |
+
+**Response — Success (201)**
+```json
+{
+  "id": "inv1",
+  "pharmacyId": "p1",
+  "pharmacyName": "City Pharmacy",
+  "inviteeEmail": "newpharmacist@example.com",
+  "role": "pharmacist",
+  "status": "pending",
+  "token": "a1b2c3d4e5f6...",
+  "expiresAt": "2026-08-01",
+  "createdAt": "2026-07-25"
+}
+```
+
+**Response — Fields**
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Unique identifier for the invitation |
+| pharmacyId | string | ID of the pharmacy that sent the invitation |
+| pharmacyName | string | Name of the pharmacy |
+| inviteeEmail | string | Email address of the invited pharmacist |
+| role | string | Role being assigned |
+| status | string | Invitation status: `pending`, `accepted`, or `expired` |
+| token | string | Unique token sent to the pharmacist via email to accept the invitation |
+| expiresAt | string | Date the invitation expires (YYYY-MM-DD) |
+| createdAt | string | Date the invitation was created (YYYY-MM-DD) |
+
+**Response — Bad Request (400)**
+```json
+{
+  "error": "pharmacyId, inviteeEmail and role are required"
+}
+```
+
+**Response — Conflict (409)**
+```json
+{
+  "error": "An invitation has already been sent to this email for this pharmacy"
+}
+```
+
+**Notes**
+- When an invitation is created, the system sends an email to the pharmacist with a link containing the token
+- The token expires after 7 days
+- If the same email is invited to the same pharmacy again, a 409 conflict error is returned
+
+---
+
+### `POST /api/invitations/:token/accept`
+
+Accepts an invitation using the token from the invitation email. Creates a membership record for the pharmacist.
+
+**Request**
+- URL parameter: `token` (string) — the unique token from the invitation email
+- No request body required
+
+**Example**
+```
+POST /api/invitations/a1b2c3d4e5f6.../accept
+```
+
+**Response — Success (201)**
+```json
+{
+  "message": "Invitation accepted successfully. You are now a member of City Pharmacy.",
+  "membership": {
+    "id": "m2",
+    "pharmacyId": "p1",
+    "pharmacyName": "City Pharmacy",
+    "userId": "u2",
+    "userFullName": "Sara Ali",
+    "userEmail": "newpharmacist@example.com",
+    "role": "pharmacist",
+    "status": "active",
+    "joinedAt": "2026-07-25"
+  }
+}
+```
+
+**Response — Not Found (404)**
+```json
+{
+  "error": "Invitation not found or invalid token"
+}
+```
+
+**Response — Bad Request (400)**
+```json
+{
+  "error": "This invitation has already been accepted"
+}
+```
+
+**Response — Bad Request (400)**
+```json
+{
+  "error": "This invitation has expired"
+}
+```
+
+**Notes**
+- Once accepted, the invitation status changes to `accepted` and a new membership record is created
+- An expired or already accepted token cannot be used again
+- The pharmacist must be logged in (via Clerk) when accepting — their user ID is taken from the auth session, not the request body
+
+---
