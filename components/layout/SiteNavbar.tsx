@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { navLinks } from "@/lib/nav-links";
 
 function MedFinderLogo() {
@@ -27,6 +28,7 @@ function MedFinderLogo() {
 
 export default function SiteNavbar() {
   const pathname = usePathname();
+  const { isLoaded, isSignedIn } = useUser();
 
   return (
     <header className="sticky top-0 z-40 border-b border-gray-100 bg-white">
@@ -50,6 +52,24 @@ export default function SiteNavbar() {
             </Link>
           ))}
         </nav>
+
+        <div className="hidden items-center gap-2 md:flex">
+          {isLoaded && isSignedIn ? (
+            <UserButton />
+          ) : (
+            <>
+              <Link
+                href="/sign-in"
+                className="rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+              >
+                Sign in
+              </Link>
+              <Link href="/sign-up" className="btn-primary-sm flex-center">
+                Sign up
+              </Link>
+            </>
+          )}
+        </div>
 
         <Link
           href="/search"

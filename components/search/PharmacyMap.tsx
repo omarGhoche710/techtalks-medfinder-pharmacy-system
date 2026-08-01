@@ -98,13 +98,12 @@ export default function PharmacyMap({
       lng: r.pharmacy.lng,
     }));
 
-
-    if (userLat !== undefined && userLng !== undefined) {
-      coords.push({
-        lat: userLat,
-        lng: userLng,
-      });
-    }
+    // Always include the user pin (when present) in the bounding box so the
+    // camera frames the user together with the visible pharmacies
+    const allCoords =
+      userLat !== undefined && userLng !== undefined
+        ? [...coords, { lat: userLat, lng: userLng }]
+        : coords;
 
 
 
@@ -113,8 +112,7 @@ export default function PharmacyMap({
     let _minLng: number;
     let _maxLng: number;
 
-
-    if (coords.length === 0) {
+    if (allCoords.length === 0) {
 
       const lat = DEFAULT_LOCATION.lat;
       const lng = DEFAULT_LOCATION.lng;
@@ -126,11 +124,11 @@ export default function PharmacyMap({
 
     } else {
 
-      _minLat = Math.min(...coords.map(c => c.lat));
-      _maxLat = Math.max(...coords.map(c => c.lat));
+      _minLat = Math.min(...allCoords.map(c => c.lat));
+      _maxLat = Math.max(...allCoords.map(c => c.lat));
 
-      _minLng = Math.min(...coords.map(c => c.lng));
-      _maxLng = Math.max(...coords.map(c => c.lng));
+      _minLng = Math.min(...allCoords.map(c => c.lng));
+      _maxLng = Math.max(...allCoords.map(c => c.lng));
 
 
       const latPadding =
@@ -176,7 +174,7 @@ export default function PharmacyMap({
       maxLat: _maxLat,
       minLng: _minLng,
       maxLng: _maxLng,
-      allCoords: coords,
+      allCoords: allCoords,
     };
 
 
