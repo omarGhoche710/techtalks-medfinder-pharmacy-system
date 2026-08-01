@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { TransactionType } from "@/app/generated/prisma/client";
 import { handleError } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
+import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
+import { validate, validationError } from "@/lib/validators";
 
 function parseTransactionType(value: string | null): TransactionType | null {
   if (!value) return null;
@@ -76,13 +78,20 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit check
+    const rateLimitResponse = await checkRateLimit(
+      request,
+      rateLimiters.transactions,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     // Step 1: Get logged in user from Clerk session
     const { userId: clerkId } = await auth();
 
     if (!clerkId) {
       return NextResponse.json(
         { error: "Unauthorized — you must be logged in." },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -94,26 +103,54 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { error: "User not found." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    // Step 3: Parse request body — performedBy no longer needed
+    // Step 3: Parse request body
     const body = await request.json();
-    const type = parseTransactionType(body.type);
     const medicationId = body.medicationId || body.medication_id;
     const quantity = Number(body.quantity);
 
-    if (!type || !medicationId || Number.isNaN(quantity) || quantity <= 0) {
-      return NextResponse.json(
-        {
-          error: "type, medicationId, and a positive quantity are required.",
+    // Step 4: Validate raw body fields before parsing
+    const { valid, error } = validate(
+      {
+        type: body.type,
+        medicationId,
+        quantity,
+      },
+      {
+        type: {
+          required: true,
+          enum: [
+            "STOCK_IN",
+            "STOCK-IN",
+            "stock_in",
+            "stock-in",
+            "DISPENSE",
+            "dispense",
+            "DAMAGE",
+            "damage",
+          ],
         },
-        { status: 400 }
+        medicationId: { required: true, type: "string" },
+        quantity: { required: true, type: "number", min: 1 },
+      },
+    );
+
+    if (!valid) return validationError(error!);
+
+    // Step 5: Parse transaction type after validation
+    const type = parseTransactionType(body.type);
+
+    if (!type) {
+      return NextResponse.json(
+        { error: "Invalid transaction type." },
+        { status: 400 },
       );
     }
 
-    // Step 4: Find medication
+    // Step 6: Find medication
     const medication = await db.medication.findUnique({
       where: { id: medicationId },
     });
@@ -121,11 +158,11 @@ export async function POST(request: NextRequest) {
     if (!medication) {
       return NextResponse.json(
         { error: "Medication not found." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    // Step 5: Verify user is an active member of this pharmacy
+    // Step 7: Verify user is an active member of this pharmacy
     const membership = await db.pharmacyMembership.findFirst({
       where: {
         user_id: user.id,
@@ -139,21 +176,25 @@ export async function POST(request: NextRequest) {
         {
           error: "Forbidden — you are not an active member of this pharmacy.",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
-    // Only OWNER and PHARMACIST can dispense medication
-if (type === TransactionType.DISPENSE && membership.role === "EMPLOYEE") {
-  return NextResponse.json(
-    {
-      error: "Forbidden — employees are not authorized to dispense medication. Only pharmacists and owners can perform this action.",
-    },
-    { status: 403 }
-  );
-}
+    // Step 8: Only OWNER and PHARMACIST can dispense medication
+    if (
+      type === TransactionType.DISPENSE &&
+      membership.role === "EMPLOYEE"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Forbidden — employees are not authorized to dispense medication. Only pharmacists and owners can perform this action.",
+        },
+        { status: 403 },
+      );
+    }
 
-    // Step 6: Calculate new stock
+    // Step 9: Calculate new stock
     let updatedStock = medication.stock;
     if (type === TransactionType.STOCK_IN) {
       updatedStock += quantity;
@@ -164,12 +205,12 @@ if (type === TransactionType.DISPENSE && membership.role === "EMPLOYEE") {
           {
             error: `Not enough stock. Current quantity is ${medication.stock}, requested ${quantity}.`,
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
 
-    // Step 7: Update stock and create transaction record atomically
+    // Step 10: Update stock and create transaction record atomically
     const transaction = await db.$transaction(async (tx) => {
       await tx.medication.update({
         where: { id: medication.id },
@@ -180,7 +221,7 @@ if (type === TransactionType.DISPENSE && membership.role === "EMPLOYEE") {
         data: {
           medication_id: medication.id,
           pharmacy_id: medication.pharmacy_id,
-          performed_by: user.id, // from auth session, not request body
+          performed_by: user.id,
           type,
           quantity_changed: quantity,
         },
@@ -202,7 +243,7 @@ if (type === TransactionType.DISPENSE && membership.role === "EMPLOYEE") {
           newStock: updatedStock,
         },
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     handleError(error);

@@ -2,6 +2,7 @@
 import { haversineKm } from "@/lib/geo";
 import { handleError } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
 
 const NEAR_ME_RADIUS_KM = 20;
 const DEFAULT_PAGE_SIZE = 5;
@@ -36,6 +37,9 @@ function formatPharmacyHours(hours: any) {
 
 export async function GET(request: NextRequest) {
   try {
+      // Rate limit check
+const rateLimitResponse = await checkRateLimit(request, rateLimiters.search);
+if (rateLimitResponse) return rateLimitResponse;
     const params = request.nextUrl.searchParams;
 
     const query = params.get("q")?.trim() ?? "";
@@ -121,6 +125,11 @@ export async function GET(request: NextRequest) {
           expiryDate: med.date_expired?.toISOString() ?? null,
           status: med.status,
           isTransferable: med.is_transferable,
+          demandSignal: med.stock === 0
+    ? "critical"
+    : med.stock < 20
+    ? "low"
+    : null,
         },
 
         inventory: {
