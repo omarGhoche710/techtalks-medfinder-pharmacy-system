@@ -143,6 +143,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Only OWNER and PHARMACIST can dispense medication
+if (type === TransactionType.DISPENSE && membership.role === "EMPLOYEE") {
+  return NextResponse.json(
+    {
+      error: "Forbidden — employees are not authorized to dispense medication. Only pharmacists and owners can perform this action.",
+    },
+    { status: 403 }
+  );
+}
+
     // Step 6: Calculate new stock
     let updatedStock = medication.stock;
     if (type === TransactionType.STOCK_IN) {
