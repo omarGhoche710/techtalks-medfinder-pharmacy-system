@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { SearchResult } from "@/lib/types";
 import { useMemo } from "react";
@@ -87,28 +87,10 @@ export default function PharmacyMap({
     allCoords,
   } = useMemo(() => {
 
-    const MAX_NEAR_KM = 200;
-
-
-    // pharmacies used for map center
-    let visibleResults = results;
-
-
-    if (userLat !== undefined && userLng !== undefined) {
-      const filtered = results.filter((r) =>
-        haversineKm(
-          userLat,
-          userLng,
-          r.pharmacy.lat,
-          r.pharmacy.lng
-        ) <= MAX_NEAR_KM
-      );
-
-
-      if (filtered.length > 0) {
-        visibleResults = filtered;
-      }
-    }
+    // The map should always frame exactly the pharmacies shown to the user.
+    // When Near Me is on we include the user pin so the camera also captures
+    // their location; when Near Me is off we frame only the pharmacy pins.
+    const visibleResults = results;
 
 
     const coords = visibleResults.map((r) => ({
@@ -152,10 +134,10 @@ export default function PharmacyMap({
 
 
       const latPadding =
-        Math.max(0.01, (_maxLat - _minLat) * 0.15);
+        Math.max(0.005, (_maxLat - _minLat) * 0.2);
 
       const lngPadding =
-        Math.max(0.01, (_maxLng - _minLng) * 0.15);
+        Math.max(0.005, (_maxLng - _minLng) * 0.2);
 
 
       _minLat -= latPadding;
@@ -216,8 +198,8 @@ export default function PharmacyMap({
   return (
     <div
       className="
-      relative 
-      h-full 
+      relative
+      h-full
       min-h-[320px]
       overflow-hidden
       rounded-xl

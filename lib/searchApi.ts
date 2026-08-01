@@ -1,10 +1,13 @@
-import type { SearchParams, SearchResult, Suggestion } from "@/lib/types";
+﻿import type { SearchParams, SearchPage, SearchResult, Suggestion } from "@/lib/types";
 
-type SearchApiResponse = {
+export type SearchApiResponse = {
   results: SearchResult[];
   query?: string;
   nearMe?: boolean;
   total?: number;
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
   error?: string;
 };
 
@@ -31,12 +34,14 @@ function resultsToSuggestions(results: SearchResult[]): Suggestion[] {
 
 export async function fetchSearchResults(
   params: SearchParams
-): Promise<SearchResult[]> {
+): Promise<SearchPage> {
   const url = new URL("/api/search", window.location.origin);
   url.searchParams.set("q", params.query);
   url.searchParams.set("nearMe", String(params.nearMe));
   if (params.lat !== undefined) url.searchParams.set("lat", String(params.lat));
   if (params.lng !== undefined) url.searchParams.set("lng", String(params.lng));
+  if (params.page) url.searchParams.set("page", String(params.page));
+  if (params.pageSize) url.searchParams.set("pageSize", String(params.pageSize));
 
   const res = await fetch(url.toString());
   const payload = (await res.json().catch(() => ({}))) as Partial<SearchApiResponse>;
@@ -45,15 +50,34 @@ export async function fetchSearchResults(
   }
 
   if (!payload.results || !Array.isArray(payload.results)) {
-    return [];
+    return {
+      results: [],
+      total: 0,
+      page: params.page ?? 1,
+      pageSize: params.pageSize ?? 5,
+      totalPages: 0,
+    };
   }
 
-  return payload.results as SearchResult[];
+  const results = payload.results as SearchResult[];
+  const pageSize = payload.pageSize ?? params.pageSize ?? 5;
+  const total = payload.total ?? results.length;
+  const totalPages =
+    payload.totalPages ??
+    (total === 0 ? 0 : Math.ceil(total / pageSize));
+
+  return {
+    results,
+    total,
+    page: payload.page ?? params.page ?? 1,
+    pageSize,
+    totalPages,
+  };
 }
 
 export async function fetchSuggestions(
   params: SearchParams
 ): Promise<Suggestion[]> {
-  const results = await fetchSearchResults(params);
-  return resultsToSuggestions(results);
+  const searchPage = await fetchSearchResults(params);
+  return resultsToSuggestions(searchPage.results);
 }

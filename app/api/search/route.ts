@@ -1,8 +1,12 @@
-import { db } from "@/lib/db";
+﻿import { db } from "@/lib/db";
 import { haversineKm } from "@/lib/geo";
 import { handleError } from "@/lib/utils";
 import type { SearchResult } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
+
+
+const NEAR_ME_RADIUS_KM = 20;
+const DEFAULT_PAGE_SIZE = 5;
 
 
 function formatStockStatus(stock: number) {
@@ -83,13 +87,24 @@ export async function GET(
 
 
 
+    const page = Math.max(1, Number(params.get("page")) || 1);
+    const pageSize = Math.max(
+      1,
+      Math.min(50, Number(params.get("pageSize")) || DEFAULT_PAGE_SIZE)
+    );
+
+
+
     if (!query) {
 
       return NextResponse.json({
         results: [],
         query,
         nearMe,
-        total: 0
+        total: 0,
+        page,
+        pageSize,
+        totalPages: 0
       });
 
     }
@@ -261,21 +276,13 @@ export async function GET(
 
 
 
-    if (
-      nearMe &&
-      hasLocation
-    ) {
+    if (nearMe && hasLocation) {
 
-      const MAX_DISTANCE = 200;
-
-
-      results =
-        results.filter(
-          r =>
-            r.distanceKm !== null &&
-            r.distanceKm <= MAX_DISTANCE
-        );
-
+      results = results.filter(
+        r =>
+          r.distanceKm !== null &&
+          r.distanceKm <= NEAR_ME_RADIUS_KM
+      );
 
 
       results.sort(
@@ -285,22 +292,41 @@ export async function GET(
           (b.distanceKm ?? Infinity)
       );
 
+    } else if (!nearMe) {
+
+      results.sort(
+        (a, b) => a.price - b.price
+      );
 
     }
 
 
 
 
+    const total = results.length;
+    const totalPages =
+      total === 0 ? 0 : Math.ceil(total / pageSize);
+
+    const start = (page - 1) * pageSize;
+    const paged = results.slice(start, start + pageSize);
+
+
 
     return NextResponse.json({
 
-      results,
+      results: paged,
 
       query,
 
       nearMe,
 
-      total: results.length
+      total,
+
+      page,
+
+      pageSize,
+
+      totalPages
 
     });
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import FilterBar from "@/components/search/FilterBar";
 import PharmacyMap from "@/components/search/PharmacyMap";
@@ -17,6 +17,8 @@ import type {
 } from "@/lib/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+const PAGE_SIZE = 5;
+
 type SearchPageClientProps = {
   initialQuery: string;
   initialNearMe: boolean;
@@ -34,6 +36,9 @@ export default function SearchPageClient({
   const [query, setQuery] = useState(initialQuery);
   const [nearMe, setNearMe] = useState(initialNearMe);
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const totalPages = total > 0 ? Math.max(1, Math.ceil(total / PAGE_SIZE)) : 0;
   const [state, setState] = useState<SearchState>(
     initialQuery ? "loading" : "idle"
   );
@@ -51,22 +56,24 @@ export default function SearchPageClient({
 
   const lat = initialLat ?? geo.lat;
   const lng = initialLng ?? geo.lng;
-  // normalize possible `null` from useGeolocation to `undefined` for child props / API
   const searchLat = lat ?? undefined;
   const searchLng = lng ?? undefined;
   const isLoading = state === "loading";
 
   const runSearch = useCallback(
-    async (searchQuery: string, useNearMe: boolean) => {
+    async (searchQuery: string, useNearMe: boolean, targetPage: number = 1) => {
       if (!searchQuery.trim()) {
         setState("idle");
         setResults([]);
+        setTotal(0);
+        setPage(1);
         return;
       }
 
       setState("loading");
       setError(null);
       setQuery(searchQuery);
+      setPage(targetPage);
 
       try {
         const data = await fetchSearchResults({
@@ -74,14 +81,18 @@ export default function SearchPageClient({
           nearMe: useNearMe,
           lat: useNearMe ? searchLat : undefined,
           lng: useNearMe ? searchLng : undefined,
+          page: targetPage,
+          pageSize: PAGE_SIZE,
         });
-        setResults(data);
-        setState(data.length > 0 ? "success" : "empty");
+        setResults(data.results);
+        setTotal(data.total);
+        setState(data.results.length > 0 ? "success" : "empty");
         setSuppressFullLoading(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Search failed");
         setState("error");
         setResults([]);
+        setTotal(0);
         setSuppressFullLoading(false);
       }
     },
@@ -90,22 +101,22 @@ export default function SearchPageClient({
 
   useEffect(() => {
     if (!initialQuery) return;
-
-    // Call runSearch asynchronously to avoid synchronous setState inside effect
-    const id = window.setTimeout(() => runSearch(initialQuery, initialNearMe), 0);
+    const id = window.setTimeout(() => runSearch(initialQuery, initialNearMe, 1), 0);
     return () => window.clearTimeout(id);
   }, [initialQuery, initialNearMe, runSearch]);
 
-  const filteredResults = useMemo(() => {
+  // Server already returns the correctly filtered + sorted page, so we just
+  // re-apply client-side filters (price / availability / distance slider) and
+  // re-sort if the user changes the sort. We keep the page slice small.
+  const visiblePage = useMemo(() => {
     const filtered = applyFilters(results, filters, nearMe);
     return applySorting(filtered, sort, nearMe);
   }, [results, filters, sort, nearMe]);
 
   useEffect(() => {
-    // Avoid calling setState synchronously inside the effect body — schedule asynchronously
     let timer: number | undefined;
 
-    if (filteredResults.length === 0) {
+    if (visiblePage.length === 0) {
       timer = window.setTimeout(() => setSelectedId(null), 0);
       return () => {
         if (timer) window.clearTimeout(timer);
@@ -113,17 +124,17 @@ export default function SearchPageClient({
     }
 
     const shouldSelectFirst =
-      !selectedId || !filteredResults.some((r) => r.id === selectedId);
+      !selectedId || !visiblePage.some((r) => r.id === selectedId);
 
     if (shouldSelectFirst) {
-      const idToSelect = filteredResults[0].id;
+      const idToSelect = visiblePage[0].id;
       timer = window.setTimeout(() => setSelectedId(idToSelect), 0);
     }
 
     return () => {
       if (timer) window.clearTimeout(timer);
     };
-  }, [filteredResults, selectedId]);
+  }, [visiblePage, selectedId]);
 
   const handleSearch = (searchQuery: string, useNearMe: boolean) => {
     const togglingNear = useNearMe !== nearMe;
@@ -137,7 +148,12 @@ export default function SearchPageClient({
       params.set("lng", String(lng));
     }
     window.history.replaceState(null, "", `/search?${params.toString()}`);
-    runSearch(searchQuery, useNearMe);
+    runSearch(searchQuery, useNearMe, 1);
+  };
+
+  const handlePageChange = (nextPage: number) => {
+    if (nextPage < 1 || nextPage === page || nextPage > totalPages) return;
+    runSearch(query, nearMe, nextPage);
   };
 
   return (
@@ -162,12 +178,17 @@ export default function SearchPageClient({
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-gray-600">
             <span className="font-semibold text-gray-900">
-              {filteredResults.length}
+              {total}
             </span>{" "}
-            result{filteredResults.length !== 1 ? "s" : ""} for &ldquo;{query}
+            result{total !== 1 ? "s" : ""} for &ldquo;{query}
             &rdquo;
             {nearMe && (
               <span className="ml-1 text-primary">· Near Me</span>
+            )}
+            {total > 0 && (
+              <span className="ml-1 text-gray-500">
+                (page {page} of {totalPages})
+              </span>
             )}
           </p>
           <div className="flex flex-wrap items-center gap-4">
@@ -182,36 +203,67 @@ export default function SearchPageClient({
         </div>
       )}
 
-      {state === "success" && filteredResults.length === 0 && (
+      {state === "success" && visiblePage.length === 0 && (
         <SearchStateView state="empty" query={query} />
       )}
 
-      {filteredResults.length > 0 && (
+      {visiblePage.length > 0 && (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start">
-          <div
-            role="list"
-            aria-label="Search results"
-            className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto pr-1"
-          >
-            {filteredResults.map((result) => (
-              <ResultCard
-                key={result.id}
-                result={result}
-                nearMe={nearMe}
-                isSelected={selectedId === result.id}
-                onSelect={() => {
-                  setSelectedId(result.id);
-                  document
-                    .getElementById(`result-${result.id}`)
-                    ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                }}
-              />
-            ))}
+          <div className="flex flex-col gap-3">
+            <div
+              role="list"
+              aria-label="Search results"
+              className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto pr-1"
+            >
+              {visiblePage.map((result) => (
+                <ResultCard
+                  key={result.id}
+                  result={result}
+                  nearMe={nearMe}
+                  isSelected={selectedId === result.id}
+                  onSelect={() => {
+                    setSelectedId(result.id);
+                    document
+                      .getElementById(`result-${result.id}`)
+                      ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                  }}
+                />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <nav
+                role="navigation"
+                aria-label="Pagination"
+                className="mt-2 flex items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm"
+              >
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page <= 1 || isLoading}
+                  className="rounded-md border border-gray-200 px-3 py-1 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <span className="text-gray-600">
+                  Page <span className="font-semibold text-gray-900">{page}</span>{" "}
+                  of {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page >= totalPages || isLoading}
+                  className="rounded-md border border-gray-200 px-3 py-1 font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </nav>
+            )}
           </div>
 
           <div className="sticky top-4 h-[70vh]">
             <PharmacyMap
-              results={filteredResults}
+              results={visiblePage}
               selectedId={selectedId}
               userLat={nearMe ? searchLat : undefined}
               userLng={nearMe ? searchLng : undefined}
@@ -234,7 +286,7 @@ export default function SearchPageClient({
           state={state}
           query={query}
           error={error}
-          onRetry={() => runSearch(query, nearMe)}
+          onRetry={() => runSearch(query, nearMe, page)}
         />
       )}
     </div>

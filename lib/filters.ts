@@ -1,5 +1,7 @@
 import type { FilterState, SearchResult, SortOption, StockStatus } from "@/lib/types";
 
+export const PAGE_SIZE = 5;
+
 export function applyFilters(
   results: SearchResult[],
   filters: FilterState,
@@ -42,6 +44,19 @@ export function applySorting(
     default:
       return sorted;
   }
+}
+
+/**
+ * Slices an already filtered + sorted result set down to a single page.
+ * `page` is 1-indexed.
+ */
+export function paginate(results: SearchResult[], page: number): SearchResult[] {
+  const start = (page - 1) * PAGE_SIZE;
+  return results.slice(start, start + PAGE_SIZE);
+}
+
+export function totalPages(results: SearchResult[]): number {
+  return Math.max(1, Math.ceil(results.length / PAGE_SIZE));
 }
 
 export function stockLabel(stock: StockStatus): string {

@@ -1,4 +1,4 @@
-export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
+﻿export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 
 export type Pharmacy = {
   id: string;
@@ -39,6 +39,16 @@ export type SearchParams = {
   nearMe: boolean;
   lat?: number;
   lng?: number;
+  page?: number;
+  pageSize?: number;
+};
+
+export type SearchPage = {
+  results: SearchResult[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 };
 
 export type Suggestion = {

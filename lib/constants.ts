@@ -4,3 +4,5 @@ export const navLinks = [
   { href: "#pharmacy", label: "For Pharmacy" },
   { href: "#team", label: "Team" },
 ] as const;
+
+

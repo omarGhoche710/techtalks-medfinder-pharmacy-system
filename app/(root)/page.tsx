@@ -21,8 +21,8 @@ export default function HomePage() {
             <SearchBar
               size="large"
               initialNearMe={true}
-              lat={geo.lat}
-              lng={geo.lng}
+              lat={geo.lat ?? undefined}
+              lng={geo.lng ?? undefined}
               geoLoading={geo.loading}
             />
             {geo.error && (
