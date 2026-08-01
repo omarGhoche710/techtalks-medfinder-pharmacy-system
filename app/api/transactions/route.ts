@@ -76,53 +76,74 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Step 1: Get logged in user from Clerk session
     const { userId: clerkId } = await auth();
 
     if (!clerkId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized — you must be logged in." },
+        { status: 401 }
+      );
     }
 
+    // Step 2: Find user in database using clerkId from session
+    const user = await db.user.findUnique({
+      where: { clerkId },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found." },
+        { status: 404 }
+      );
+    }
+
+    // Step 3: Parse request body — performedBy no longer needed
     const body = await request.json();
     const type = parseTransactionType(body.type);
     const medicationId = body.medicationId || body.medication_id;
     const quantity = Number(body.quantity);
-    const performedBy = body.performedBy || body.performed_by;
 
-    if (!type || !medicationId || Number.isNaN(quantity) || quantity <= 0 || !performedBy) {
+    if (!type || !medicationId || Number.isNaN(quantity) || quantity <= 0) {
       return NextResponse.json(
         {
-          error: "type, medicationId, performedBy, and a positive quantity are required.",
+          error: "type, medicationId, and a positive quantity are required.",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
+    // Step 4: Find medication
     const medication = await db.medication.findUnique({
-      where: {
-        id: medicationId,
-      },
+      where: { id: medicationId },
     });
 
     if (!medication) {
       return NextResponse.json(
         { error: "Medication not found." },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
-    const user = await db.user.findUnique({
+    // Step 5: Verify user is an active member of this pharmacy
+    const membership = await db.pharmacyMembership.findFirst({
       where: {
-        id: performedBy,
+        user_id: user.id,
+        pharmacy_id: medication.pharmacy_id,
+        is_active: true,
       },
     });
 
-    if (!user) {
+    if (!membership) {
       return NextResponse.json(
-        { error: "Performing user not found." },
-        { status: 404 },
+        {
+          error: "Forbidden — you are not an active member of this pharmacy.",
+        },
+        { status: 403 }
       );
     }
 
+    // Step 6: Calculate new stock
     let updatedStock = medication.stock;
     if (type === TransactionType.STOCK_IN) {
       updatedStock += quantity;
@@ -133,11 +154,12 @@ export async function POST(request: NextRequest) {
           {
             error: `Not enough stock. Current quantity is ${medication.stock}, requested ${quantity}.`,
           },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
 
+    // Step 7: Update stock and create transaction record atomically
     const transaction = await db.$transaction(async (tx) => {
       await tx.medication.update({
         where: { id: medication.id },
@@ -148,7 +170,7 @@ export async function POST(request: NextRequest) {
         data: {
           medication_id: medication.id,
           pharmacy_id: medication.pharmacy_id,
-          performed_by: user.id,
+          performed_by: user.id, // from auth session, not request body
           type,
           quantity_changed: quantity,
         },
@@ -165,10 +187,12 @@ export async function POST(request: NextRequest) {
         transaction: mapTransaction(transaction),
         updatedMedication: {
           id: medication.id,
-          stock: updatedStock,
+          name: medication.name,
+          previousStock: medication.stock,
+          newStock: updatedStock,
         },
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     handleError(error);
@@ -178,4 +202,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
