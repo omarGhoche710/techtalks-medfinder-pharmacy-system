@@ -64,20 +64,24 @@ export async function GET(
       request.nextUrl.searchParams;
 
 
-    const query =
-      params.get("q")?.trim() ?? "";
-
-
     const nearMe =
-      params.get("nearMe") === "true";
+  params.get("nearMe") === "true";
 
+const lat =
+  Number(params.get("lat"));
 
-    const lat =
-      Number(params.get("lat"));
+const lng =
+  Number(params.get("lng"));
 
+// New: filter only available (in-stock) medications
+const availableOnly =
+  params.get("available") === "true";
 
-    const lng =
-      Number(params.get("lng"));
+// New: custom nearby radius in km (defaults to NEAR_ME_RADIUS_KM)
+const nearbyRadius =
+  params.get("radius")
+    ? Math.max(1, Number(params.get("radius")))
+    : NEAR_ME_RADIUS_KM;
 
 
 
@@ -93,9 +97,10 @@ export async function GET(
       Math.min(50, Number(params.get("pageSize")) || DEFAULT_PAGE_SIZE)
     );
 
+const searchParams = request.nextUrl.searchParams;
+const query = searchParams.get("query") ?? "";
 
-
-    if (!query) {
+if (!query) {
 
       return NextResponse.json({
         results: [],
@@ -111,41 +116,38 @@ export async function GET(
 
 
 
-    const medications =
-      await db.medication.findMany({
+const medications =
+  await db.medication.findMany({
 
-        where: {
-          OR: [
+    where: {
+      // New: filter by availability at database level
+      ...(availableOnly && { stock: { gt: 0 } }),
 
-            {
+      OR: [
+        {
+          name: {
+            contains: query,
+            mode: "insensitive"
+          }
+        },
+        {
+          code: {
+            contains: query,
+            mode: "insensitive"
+          }
+        },
+        {
+          pharmacy: {
+            is: {
               name: {
                 contains: query,
                 mode: "insensitive"
               }
-            },
-
-
-            {
-              code: {
-                contains: query,
-                mode: "insensitive"
-              }
-            },
-
-
-            {
-              pharmacy: {
-                is: {
-                  name: {
-                    contains: query,
-                    mode: "insensitive"
-                  }
-                }
-              }
             }
-
-          ]
-        },
+          }
+        }
+      ]
+    },
 
 
         include: {
@@ -281,7 +283,7 @@ export async function GET(
       results = results.filter(
         r =>
           r.distanceKm !== null &&
-          r.distanceKm <= NEAR_ME_RADIUS_KM
+          r.distanceKm <= nearbyRadius
       );
 
 
@@ -319,6 +321,10 @@ export async function GET(
       query,
 
       nearMe,
+
+        availableOnly,
+
+  nearbyRadius,
 
       total,
 
