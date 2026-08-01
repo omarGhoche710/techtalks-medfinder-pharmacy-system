@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { handleError } from "@/lib/utils";
+import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
 
 function mapMedicationToInventory(medication: any) {
   return {
@@ -59,6 +60,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+
+        const rateLimitResponse = await checkRateLimit(request, rateLimiters.inventory);
+if (rateLimitResponse) return rateLimitResponse;
     const body = await request.json();
 
     const code = body.code?.toString().trim();
@@ -77,6 +81,10 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+
+    // Verify the user is an active member of this pharmacy
+    const { error } = await verifyPharmacyMembership(pharmacyId);
+    if (error) return error;
 
     if (quantity < 0 || price < 0) {
       return NextResponse.json(
@@ -134,4 +142,10 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
+} 
+
+function verifyPharmacyMembership(pharmacyId: any): { error: any; } | PromiseLike<{ error: any; }> {
+  throw new Error("Function not implemented.");
 }
+
+

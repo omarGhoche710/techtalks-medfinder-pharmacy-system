@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { handleError } from "@/lib/utils";
+import { verifyPharmacyMembership } from "@/lib/pharmacy-auth";
 
 function mapMedicationToInventory(medication: any) {
   return {
@@ -59,6 +60,17 @@ export async function PATCH(
       );
     }
 
+    // Block direct stock changes — must use /api/transactions instead
+if (quantity !== undefined) {
+  return NextResponse.json(
+    {
+      error: "Stock cannot be updated directly. Use POST /api/transactions with type STOCK_IN, DISPENSE, or DAMAGE to adjust stock. This ensures every stock movement is recorded.",
+    },
+    { status: 400 }
+  );
+}
+
+// Find medication first to get pharmacyId
     const medication = await db.medication.findUnique({
       where: { id },
       include: { pharmacy: true },
@@ -130,6 +142,10 @@ export async function DELETE(
         { status: 404 },
       );
     }
+
+    // Verify the user is an active member of this pharmacy
+    const { error } = await verifyPharmacyMembership(medication.pharmacy_id);
+    if (error) return error;
 
     const deletedMedication = await db.medication.delete({
       where: { id },
