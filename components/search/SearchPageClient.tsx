@@ -153,6 +153,9 @@ export default function SearchPageClient({
 
   const handlePageChange = (nextPage: number) => {
     if (nextPage < 1 || nextPage === page || nextPage > totalPages) return;
+    // Suppress the full loading overlay so the page change feels instant —
+    // the pagination buttons themselves provide the loading affordance.
+    setSuppressFullLoading(true);
     runSearch(query, nearMe, nextPage);
   };
 
