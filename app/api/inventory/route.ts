@@ -78,6 +78,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify the user is an active member of this pharmacy
+    const { error } = await verifyPharmacyMembership(pharmacyId);
+    if (error) return error;
+
     if (quantity < 0 || price < 0) {
       return NextResponse.json(
         { error: "quantity and price must be non-negative." },
@@ -135,3 +139,7 @@ export async function POST(request: NextRequest) {
     );
   }
 } 
+
+function verifyPharmacyMembership(pharmacyId: any): { error: any; } | PromiseLike<{ error: any; }> {
+  throw new Error("Function not implemented.");
+}

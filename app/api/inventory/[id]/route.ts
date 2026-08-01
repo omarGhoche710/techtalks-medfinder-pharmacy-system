@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { handleError } from "@/lib/utils";
+import { verifyPharmacyMembership } from "@/lib/pharmacy-auth";
 
 function mapMedicationToInventory(medication: any) {
   return {
@@ -69,6 +70,7 @@ if (quantity !== undefined) {
   );
 }
 
+// Find medication first to get pharmacyId
     const medication = await db.medication.findUnique({
       where: { id },
       include: { pharmacy: true },
@@ -140,6 +142,10 @@ export async function DELETE(
         { status: 404 },
       );
     }
+
+    // Verify the user is an active member of this pharmacy
+    const { error } = await verifyPharmacyMembership(medication.pharmacy_id);
+    if (error) return error;
 
     const deletedMedication = await db.medication.delete({
       where: { id },
