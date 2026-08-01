@@ -284,7 +284,10 @@ Updates an existing inventory item (e.g. quantity or price).
   "error": "Inventory item not found"
 }
 ```
-
+**Notes**
+- Stock quantity cannot be updated directly via this endpoint
+- To adjust stock, use POST /api/transactions with type STOCK_IN, DISPENSE, or DAMAGE
+- This ensures every stock movement is recorded in the Transaction table
 ---
 
 ### `DELETE /api/inventory/:id`
