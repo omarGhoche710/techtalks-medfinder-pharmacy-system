@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PharmacyIllustration } from "@/components/PharmacyIllustration";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -25,12 +24,9 @@ import {
     Dialog, DialogContent, DialogDescription, DialogFooter,
     DialogHeader, DialogTitle, DialogClose,
 } from "@/components/ui/dialog"
-import type { LatLngExpression } from "leaflet"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import styles from "../auth.module.css";
-import GoogleIcon from '@iconify-react/material-icon-theme/google';
-import BaselineAppleIcon from '@iconify-react/ic/baseline-apple';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { setSignupLocation } from "@/lib/signupLocation";
@@ -44,6 +40,7 @@ const Signup = () => {
     const [error, setError] = useState<string | null>(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const router = useRouter();
+
 
     const handleSubmitClick = (e: any) => {
         e.preventDefault();
@@ -77,9 +74,6 @@ const Signup = () => {
         router.push('/pharmacy/Dashboard');
     };
 
-    useEffect(() => {
-        console.log("LOCATION UPDATED:", location);
-    }, [location]);
 
     return (
         <div className={styles.pageContainer}>
@@ -168,21 +162,7 @@ const Signup = () => {
                                     Sign Up
                                 </Button>
 
-                                <div className={styles.divider}>
-                                    <span>or</span>
-                                </div>
-
-                                <div className={styles.socialLoginContainer}>
-                                    <Button className={styles.btnSocial} variant="outline">
-                                        <GoogleIcon height='18' width='18' />
-                                        Sign Up with Google
-                                    </Button>
-                                    <Button className={styles.btnSocial} variant="outline">
-                                        <BaselineAppleIcon height='25' width='25' />
-                                        Sign Up with Apple
-                                    </Button>
-                                </div>
-                                <CardAction className={styles.authSwitch}>
+<CardAction className={styles.authSwitch}>
                                     <span className={styles.authSwitchText}>Already have an account?</span>
                                     <Button className={styles.authSwitchLink} variant="link" onClick={() => router.push('/pharmacy/login')}>
                                         Log In
@@ -194,7 +174,22 @@ const Signup = () => {
                 </Card>
             </div>
             <div className={styles.imageContainer}>
-                <PharmacyIllustration className={styles.authIllustration} />
+              <div className={styles.heroContent}>
+                <div className={styles.heroLogo}>
+                  <span className={styles.heroLogoText}>MedFinder</span>
+                </div>
+                <h2 className={styles.heroTitle}>
+                  Welcome to <span>MedFinder!</span>
+                </h2>
+                <p className={styles.heroBody}>
+                  One website where you can add your pharmacy's medication, manage your stock, and help people find your location increasing your visibility!
+                </p>
+                <div className={styles.heroDots}>
+                  <div className={styles.heroDot} />
+                  <div className={styles.heroDot} />
+                  <div className={styles.heroDot} />
+                </div>
+              </div>
             </div>
 
             {/* Confirmation dialog — recaps the last selected location before final submit */}
@@ -207,7 +202,7 @@ const Signup = () => {
                         </DialogDescription>
                     </DialogHeader>
                     {location && (
-                        <div className="rounded-lg bg-[#F3F8F5] border border-[#D8E7DF] p-3 text-sm text-[#1F2B29] font-mono">
+                        <div className="rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] p-3 text-sm text-[#111827] font-mono">
                             Lat: {location.lat.toFixed(6)}<br />
                             Lng: {location.lng.toFixed(6)}
                         </div>

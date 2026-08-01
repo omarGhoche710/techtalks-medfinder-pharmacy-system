@@ -21,20 +21,20 @@ export default function Dashboard({
     onNavigate,
 }: DashboardProps) {
     return (
-        <div className="min-h-screen bg-[#EAF3ED] p-6 md:p-10">
+        <div className="min-h-screen bg-[#F9FAFB] p-6 md:p-10">
             <div className="mx-auto max-w-6xl space-y-6">
                 {/* Top row: welcome + stats */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Welcome card */}
-                    <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-[#145C54] text-white p-8 md:p-10 flex flex-col justify-between min-h-[280px]">
+                    <div className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-[#2563EB] text-white p-8 md:p-10 flex flex-col justify-between min-h-[280px]">
                         <div className="max-w-md">
-                            <p className="text-sm uppercase tracking-wide text-[#9FD8C7] mb-2">
+                            <p className="text-sm uppercase tracking-wide text-[#BFDBFE] mb-2">
                                 MedFinder for pharmacies
                             </p>
                             <h1 className="text-3xl md:text-4xl font-semibold leading-tight">
                                 Welcome back, {pharmacyName}
                             </h1>
-                            <p className="mt-3 text-[#CFE9DF] text-sm md:text-base">
+                            <p className="mt-3 text-[#DBEAFE] text-sm md:text-base">
                                 Here's what's happening in your inventory today.
                             </p>
                         </div>
@@ -71,17 +71,17 @@ export default function Dashboard({
                             <PackageX className="w-5 h-5" />
                         </div>
                         <div className="flex-1">
-                            <p className="font-medium text-[#1F2B29]">
+                            <p className="font-medium text-[#111827]">
                                 {outOfStockItems.length} medication{outOfStockItems.length > 1 ? "s" : ""} out of stock
                             </p>
-                            <p className="text-sm text-[#5B6B66] mt-0.5">
+                            <p className="text-sm text-[#6B7280] mt-0.5">
                                 {outOfStockItems.slice(0, 4).map((m) => m.name).join(", ")}
                                 {outOfStockItems.length > 4 && ` and ${outOfStockItems.length - 4} more`}
                             </p>
                         </div>
                         <button
                             onClick={() => onNavigate("pharmacy/Inventory")}
-                            className="text-sm font-medium text-[#145C54] hover:underline shrink-0 self-center"
+                            className="text-sm font-medium text-[#2563EB] hover:underline shrink-0 self-center"
                         >
                             Restock
                         </button>
@@ -136,17 +136,17 @@ function StatCard({
     tone: "teal" | "amber" | "coral" | "violet";
 }) {
     const tones = {
-        teal: "bg-white text-[#145C54]",
+        teal: "bg-white text-[#2563EB]",
         amber: "bg-white text-[#B9761F]",
         coral: "bg-white text-[#C4544A]",
         violet: "bg-white text-[#6B4FA0]",
     };
     return (
-        <div className={`rounded-2xl p-5 flex items-center gap-4 border border-[#D8E7DF] ${tones[tone]}`}>
+        <div className={`rounded-2xl p-5 flex items-center gap-4 border border-[#E5E7EB] ${tones[tone]}`}>
             <div className="shrink-0">{icon}</div>
             <div>
                 <p className="text-2xl font-semibold leading-none">{value}</p>
-                <p className="text-xs text-[#5B6B66] mt-1">{label}</p>
+                <p className="text-xs text-[#6B7280] mt-1">{label}</p>
             </div>
         </div>
     );
@@ -166,7 +166,7 @@ function ActionCard({
     onClick: () => void;
 }) {
     const iconTones = {
-        teal: "bg-[#E1F0EA] text-[#145C54]",
+        teal: "bg-[#EFF6FF] text-[#2563EB]",
         amber: "bg-[#FAEEDA] text-[#B9761F]",
         coral: "bg-[#F7E7E5] text-[#C4544A]",
         violet: "bg-[#EEE8F7] text-[#6B4FA0]",
@@ -174,14 +174,14 @@ function ActionCard({
     return (
         <button
             onClick={onClick}
-            className="text-left rounded-2xl bg-white border border-[#D8E7DF] p-6 hover:border-[#145C54] hover:shadow-sm transition-all group"
+            className="text-left rounded-2xl bg-white border border-[#E5E7EB] p-6 hover:border-[#2563EB] hover:shadow-sm transition-all group"
         >
             <div className={`inline-flex rounded-full p-3 mb-4 ${iconTones[tone]}`}>{icon}</div>
-            <h3 className="font-semibold text-[#1F2B29] flex items-center gap-1.5">
+            <h3 className="font-semibold text-[#111827] flex items-center gap-1.5">
                 {title}
                 <ArrowRight className="w-4 h-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
             </h3>
-            <p className="text-sm text-[#5B6B66] mt-1.5 leading-relaxed">{description}</p>
+            <p className="text-sm text-[#6B7280] mt-1.5 leading-relaxed">{description}</p>
         </button>
     );
 }
@@ -213,33 +213,33 @@ function PharmacistBear({ className }: { className?: string }) {
             <circle cx="100" cy="90" r="52" fill="#A8703F" />
             <ellipse cx="100" cy="102" rx="26" ry="20" fill="#D9B48A" />
             {/* glasses */}
-            <circle cx="82" cy="86" r="14" fill="none" stroke="#1F2B29" strokeWidth="3" />
-            <circle cx="118" cy="86" r="14" fill="none" stroke="#1F2B29" strokeWidth="3" />
-            <line x1="96" y1="86" x2="104" y2="86" stroke="#1F2B29" strokeWidth="3" />
+            <circle cx="82" cy="86" r="14" fill="none" stroke="#111827" strokeWidth="3" />
+            <circle cx="118" cy="86" r="14" fill="none" stroke="#111827" strokeWidth="3" />
+            <line x1="96" y1="86" x2="104" y2="86" stroke="#111827" strokeWidth="3" />
             {/* eyes */}
             {blink ? (
                 <>
-                    <line x1="77" y1="86" x2="87" y2="86" stroke="#1F2B29" strokeWidth="2.5" />
-                    <line x1="113" y1="86" x2="123" y2="86" stroke="#1F2B29" strokeWidth="2.5" />
+                    <line x1="77" y1="86" x2="87" y2="86" stroke="#111827" strokeWidth="2.5" />
+                    <line x1="113" y1="86" x2="123" y2="86" stroke="#111827" strokeWidth="2.5" />
                 </>
             ) : (
                 <>
-                    <circle cx="82" cy="86" r="3" fill="#1F2B29" />
-                    <circle cx="118" cy="86" r="3" fill="#1F2B29" />
+                    <circle cx="82" cy="86" r="3" fill="#111827" />
+                    <circle cx="118" cy="86" r="3" fill="#111827" />
                 </>
             )}
             {/* nose */}
-            <ellipse cx="100" cy="104" rx="6" ry="4" fill="#1F2B29" />
+            <ellipse cx="100" cy="104" rx="6" ry="4" fill="#111827" />
             {/* lab coat */}
             <path
                 d="M60 138 Q100 122 140 138 L148 190 L52 190 Z"
                 fill="#FFFFFF"
-                stroke="#D8E7DF"
+                stroke="#E5E7EB"
                 strokeWidth="2"
             />
-            <path d="M92 138 L100 150 L108 138" fill="none" stroke="#D8E7DF" strokeWidth="2" />
-            <circle cx="100" cy="165" r="2.5" fill="#145C54" />
-            <circle cx="100" cy="178" r="2.5" fill="#145C54" />
+            <path d="M92 138 L100 150 L108 138" fill="none" stroke="#E5E7EB" strokeWidth="2" />
+            <circle cx="100" cy="165" r="2.5" fill="#2563EB" />
+            <circle cx="100" cy="178" r="2.5" fill="#2563EB" />
         </svg>
     );
 }

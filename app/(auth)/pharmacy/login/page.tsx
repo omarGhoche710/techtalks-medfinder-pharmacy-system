@@ -1,7 +1,6 @@
 "use client";
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { PharmacyIllustration } from "@/components/PharmacyIllustration";
+import React, { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,29 +13,46 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import GoogleIcon from '@iconify-react/material-icon-theme/google';
-import BaselineAppleIcon from '@iconify-react/ic/baseline-apple';
 import styles from "../auth.module.css";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 
+const REMEMBER_KEY = 'medfinder_remembered_email';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next');
+
+  // Pre-fill email if previously remembered
+  useEffect(() => {
+    const saved = localStorage.getItem(REMEMBER_KEY);
+    if (saved) {
+      setEmail(saved);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleLogin = async (e: any) => {
     e.preventDefault();
     setError('');
 
+    if (rememberMe) {
+      localStorage.setItem(REMEMBER_KEY, email);
+    } else {
+      localStorage.removeItem(REMEMBER_KEY);
+    }
+
     try {
-      //api call to login
+      // api call to login
     } catch (err) {
       setError('Invalid email or password');
     }
-    router.push('/pharmacy/Dashboard');
+    router.push(next ?? '/pharmacy/Dashboard');
   };
 
   return (
@@ -48,7 +64,6 @@ const LoginPage = () => {
             <CardDescription className={styles.formDescription}>
               Enter your email below to login to your account
             </CardDescription>
-
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className={styles.formGroup}>
@@ -60,18 +75,29 @@ const LoginPage = () => {
                     id="email"
                     type="email"
                     placeholder="m@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <div className="flex items-center">
-                    <Label className={styles.formLabel} htmlFor="password">Password</Label>
-                  </div>
-                  <Input className={styles.formInput} id="password" type="password" required />
+                  <Label className={styles.formLabel} htmlFor="password">Password</Label>
+                  <Input
+                    className={styles.formInput}
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
                 </div>
                 <FieldGroup className={styles.formCheckboxGroup}>
                   <Field orientation="horizontal">
-                    <Checkbox className={styles.formCheckbox} />
+                    <Checkbox
+                      className={styles.formCheckbox}
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => setRememberMe(!!checked)}
+                    />
                     <FieldLabel className={styles.FieldLabel} htmlFor="remember">
                       Remember me
                     </FieldLabel>
@@ -84,38 +110,37 @@ const LoginPage = () => {
             </form>
           </CardContent>
           <CardFooter className={styles.cardFooter}>
-            <Button type="submit" className={styles.btnPrimary}>
+            {error && <p className="text-xs text-red-600 w-full">{error}</p>}
+            <Button type="submit" className={styles.btnPrimary} onClick={handleLogin}>
               Login
             </Button>
-            <div className={styles.divider}>
-              <span>or</span>
-            </div>
-            <div className={styles.socialLoginContainer}>
-              <Button className={styles.btnSocial} variant="outline">
-                <GoogleIcon height='25' width='25' />
-                Login with Google
-              </Button>
-              <Button className={styles.btnSocial} variant="outline">
-                <BaselineAppleIcon height='25' width='25' />
-                Login with Apple
-              </Button>
-            </div>
             <CardAction className={styles.authSwitch}>
-              <span className={styles.authSwitchText}>Already have an account?</span>
+              <span className={styles.authSwitchText}>Don't have an account?</span>
               <Button className={styles.authSwitchLink} variant="link" onClick={() => router.push('/pharmacy/signup')}>
                 Sign Up
               </Button>
             </CardAction>
           </CardFooter>
-
         </Card>
       </div>
       <div className={styles.imageContainer}>
-        <div className={styles.imageContainer}>
-          <PharmacyIllustration className={styles.authIllustration} />
+        <div className={styles.heroContent}>
+          <div className={styles.heroLogo}>
+            <span className={styles.heroLogoText}>MedFinder</span>
+          </div>
+          <h2 className={styles.heroTitle}>
+            Welcome to <span>MedFinder!</span>
+          </h2>
+          <p className={styles.heroBody}>
+            One website where you can add your pharmacy's medication, manage your stock, and help people find your location increasing your visibility!
+          </p>
+          <div className={styles.heroDots}>
+            <div className={styles.heroDot} />
+            <div className={styles.heroDot} />
+            <div className={styles.heroDot} />
+          </div>
         </div>
       </div>
-
     </div>
   );
 };

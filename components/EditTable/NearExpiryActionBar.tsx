@@ -21,6 +21,7 @@ interface NearExpiryActionBarProps {
     onApplyDiscount: (medicines: Medication[], percent: number) => void
     onConfirmDamage: (medicines: Medication[]) => void
     onTransfer: (medicines: Medication[]) => void
+    pharmacyId?: string
 }
 
 export function NearExpiryActionBar({
@@ -29,6 +30,7 @@ export function NearExpiryActionBar({
     onApplyDiscount,
     onConfirmDamage,
     onTransfer,
+    pharmacyId = "",
 }: NearExpiryActionBarProps) {
     const [discountOpen, setDiscountOpen] = useState(false)
     const [damageOpen, setDamageOpen] = useState(false)
@@ -61,7 +63,7 @@ export function NearExpiryActionBar({
 
     return (
         <>
-            <div className="sticky top-0 z-20 mb-3 flex items-center justify-between rounded-xl border border-[#D8E7DF] bg-[#145C54] px-4 py-3 text-white shadow-sm">
+            <div className="sticky top-0 z-20 mb-3 flex items-center justify-between rounded-xl border border-[#E5E7EB] bg-[#2563EB] px-4 py-3 text-white shadow-sm">
                 <span className="text-sm font-semibold">
                     {selected.length} selected
                 </span>
@@ -153,6 +155,7 @@ export function NearExpiryActionBar({
                 open={transferOpen}
                 onOpenChange={setTransferOpen}
                 medicines={selected}
+                pharmacyId={pharmacyId}
                 onSend={handleTransferSend}
             />
         </>

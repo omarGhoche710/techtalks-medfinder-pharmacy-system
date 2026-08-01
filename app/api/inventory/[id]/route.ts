@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { handleError } from "@/lib/utils";
+// stock_delta and discount fields are accepted in addition to the existing fields
 
 function mapMedicationToInventory(medication: any) {
   return {
@@ -35,8 +36,10 @@ export async function PATCH(
     const name = (body.medicationName || body.name)?.toString().trim();
     const description = body.description === undefined ? undefined : body.description?.toString().trim() || null;
     const quantity = body.quantity !== undefined ? Number(body.quantity) : undefined;
+    const stockDelta = body.stock_delta !== undefined ? Number(body.stock_delta) : undefined;
     const price = body.price !== undefined ? Number(body.price) : undefined;
     const expiryDate = body.expiryDate?.toString().trim();
+    const discountPercentage = body.discount_percentage !== undefined ? Number(body.discount_percentage) : undefined;
 
     if (code && code.length === 0) {
       return NextResponse.json(
@@ -88,6 +91,21 @@ export async function PATCH(
     if (quantity !== undefined) data.stock = quantity;
     if (price !== undefined) data.price = price;
     if (expiryDate) data.date_expired = new Date(expiryDate);
+
+    // stock_delta: relative adjustment (positive = stock in, negative = dispense)
+    if (stockDelta !== undefined && !Number.isNaN(stockDelta)) {
+      data.stock = { increment: stockDelta };
+    }
+
+    // discount fields
+    if (discountPercentage !== undefined && !Number.isNaN(discountPercentage)) {
+      data.discount_percentage = discountPercentage;
+      // recompute discounted price from current price
+      const currentPrice = medication.price;
+      data.discounted_price = discountPercentage === 0
+        ? null
+        : Math.round(currentPrice * (1 - discountPercentage / 100) * 100) / 100;
+    }
 
     if (Object.keys(data).length === 0) {
       return NextResponse.json(

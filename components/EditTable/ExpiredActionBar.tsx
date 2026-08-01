@@ -37,7 +37,7 @@ export function ExpiredActionBar({
 
     return (
         <>
-            <div className="sticky top-0 z-20 mb-3 flex items-center justify-between rounded-xl border border-[#D8E7DF] bg-[#145C54] px-4 py-3 text-white shadow-sm">
+            <div className="sticky top-0 z-20 mb-3 flex items-center justify-between rounded-xl border border-[#E5E7EB] bg-[#2563EB] px-4 py-3 text-white shadow-sm">
                 <span className="text-sm font-semibold">
                     {selected.length} selected
                 </span>

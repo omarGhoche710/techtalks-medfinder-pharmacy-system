@@ -18,7 +18,7 @@ function HighlightedText({ text, query }: { text: string; query: string }) {
     <>
       {parts.map((part, index) =>
         part.toLowerCase() === query.trim().toLowerCase() ? (
-          <strong key={index} className="font-semibold text-[#145C54]">
+          <strong key={index} className="font-semibold text-[#2563EB]">
             {part}
           </strong>
         ) : (
@@ -139,10 +139,10 @@ export default function Searchbar({
             }}
             onFocus={() => query.trim() && setIsOpen(true)}
             onKeyDown={handleKeyDown}
-            className="h-11 w-full rounded-full border border-[#D8E7DF] bg-white px-5 pr-11 text-sm text-[#1F2B29] placeholder:text-[#8B9A95] outline-none transition-shadow focus:border-[#145C54] focus:shadow-[0_0_0_3px_#E1F0EA]"
+            className="h-11 w-full rounded-full border border-[#E5E7EB] bg-white px-5 pr-11 text-sm text-[#111827] placeholder:text-[#9CA3AF] outline-none transition-shadow focus:border-[#2563EB] focus:shadow-[0_0_0_3px_#EFF6FF]"
           />
           <svg
-            className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8B9A95]"
+            className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -158,7 +158,7 @@ export default function Searchbar({
         <button
           type="button"
           onClick={handleSearch}
-          className="h-11 shrink-0 rounded-full bg-[#145C54] px-7 text-sm font-semibold text-white transition-colors hover:bg-[#0F4A43] active:scale-[0.98]"
+          className="h-11 shrink-0 rounded-full bg-[#2563EB] px-7 text-sm font-semibold text-white transition-colors hover:bg-[#1D4ED8] active:scale-[0.98]"
         >
           Search
         </button>
@@ -168,7 +168,7 @@ export default function Searchbar({
         <ul
           id="search-autocomplete"
           role="listbox"
-          className="absolute left-0 right-14 top-[calc(100%+6px)] z-50 max-h-72 overflow-y-auto rounded-xl border border-[#D8E7DF] bg-white py-1 shadow-[0_8px_30px_rgba(20,92,84,0.08)]"
+          className="absolute left-0 right-14 top-[calc(100%+6px)] z-50 max-h-72 overflow-y-auto rounded-xl border border-[#E5E7EB] bg-white py-1 shadow-[0_8px_30px_rgba(37,99,235,0.08)]"
         >
           {suggestions.length > 0 ? (
             suggestions.map((medication, index) => (
@@ -180,8 +180,8 @@ export default function Searchbar({
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => selectSuggestion(medication)}
                 className={`cursor-pointer px-4 py-3 transition-colors ${index === activeIndex
-                  ? "bg-[#E1F0EA]"
-                  : "hover:bg-[#F3F8F5]"
+                  ? "bg-[#EFF6FF]"
+                  : "hover:bg-[#F3F4F6]"
                   }`}
               >
                 <div className="flex items-center">
@@ -192,12 +192,12 @@ export default function Searchbar({
                     {medication.name.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-[#1F2B29]">
+                    <p className="truncate text-sm font-medium text-[#111827]">
                       <HighlightedText text={medication.name} query={query} />
                     </p>
-                    <p className="truncate text-xs text-[#5B6B66]">
+                    <p className="truncate text-xs text-[#6B7280]">
                       <HighlightedText text={medication.code} query={query} />
-                      <span className="mx-1.5 text-[#D8E7DF]">·</span>
+                      <span className="mx-1.5 text-[#E5E7EB]">·</span>
                       Exp {medication.expiry.toLocaleDateString()}
                     </p>
                   </div>
@@ -205,7 +205,7 @@ export default function Searchbar({
               </li>
             ))
           ) : (
-            <li className="px-4 py-3 text-sm text-[#5B6B66]">
+            <li className="px-4 py-3 text-sm text-[#6B7280]">
               No medications found for &ldquo;{query}&rdquo;
             </li>
           )}

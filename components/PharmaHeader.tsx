@@ -13,16 +13,11 @@ type HeaderProps = {
   onSearch: (query: string) => void;
 };
 
-export function Header({
-  medications,
-  query,
-  onQueryChange,
-  onSearch,
-}: HeaderProps) {
+export function Header({ medications, query, onQueryChange, onSearch }: HeaderProps) {
   const [isAddOpen, setIsAddOpen] = useState(false)
   return (
-    <div className="w-full border-b border-[#D8E7DF] bg-[#EAF3ED]">
-      <div className="flex w-full justify-center px-6 pt-4 ">
+    <div className="w-full border-b border-[#E5E7EB] bg-white">
+      <div className="flex w-full justify-center px-6 pt-4">
         <SearchBar
           medications={medications}
           query={query}
@@ -30,16 +25,13 @@ export function Header({
           onSearch={onSearch}
         />
       </div>
-      <div className="flex justify-end px-6 pt-6 pb-4">
-        <Button onClick={() => setIsAddOpen(true)} className="h-10 gap-1.5 rounded-lg bg-[#145C54] px-4 text-white transition-colors hover:bg-[#0F4A43] active:scale-[0.98]">
+      <div className="flex justify-end px-6 pt-4 pb-4">
+        <Button onClick={() => setIsAddOpen(true)} className="h-10 gap-1.5 rounded-lg bg-[#2563EB] px-4 text-white transition-colors hover:bg-[#1D4ED8] active:scale-[0.98]">
           <Plus className="size-4" />
           Add New Product
         </Button>
       </div>
-      <AddProduct
-        open={isAddOpen}
-        onOpenChange={setIsAddOpen}
-      />
+      <AddProduct open={isAddOpen} onOpenChange={setIsAddOpen} />
     </div>
   )
 }

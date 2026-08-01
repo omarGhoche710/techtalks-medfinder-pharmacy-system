@@ -1,439 +1,156 @@
 'use client'
 
-import { useState } from 'react'
 import {
     Store,
     Settings,
     LifeBuoy,
-    ChevronDown,
     CircleUserRound,
     HomeIcon,
     Users,
-    type LucideIcon
+    type LucideIcon,
 } from 'lucide-react'
-import { usePathname } from "next/navigation";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenuButton, SidebarMenuItem } from './ui/sidebar';
-import Link from "next/link";
+import { usePathname } from 'next/navigation'
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarHeader,
+} from './ui/sidebar'
+import Link from 'next/link'
 
-type NavGroup = {
+/* ─── data ──────────────────────────────────────────────────────────── */
+
+const topItems: { label: string; href: string; icon: LucideIcon }[] = [
+    { label: 'Dashboard', href: '/pharmacy/Dashboard', icon: HomeIcon },
+    { label: 'Staff',     href: '/pharmacy/Staff',     icon: Users   },
+]
+
+const sections: {
     label: string
     icon: LucideIcon
-    items: NavItem[]
-}
-
-type NavItem = {
-    label: string;
-    href: string;
-}
-
-const groups: NavGroup[] = [
+    items: { label: string; href: string }[]
+}[] = [
     {
         label: 'Store',
         icon: Store,
-        items: [{ label: 'Inventory', href: '/pharmacy/Inventory' },
-        { label: 'Near Expiry', href: '/pharmacy/NearExpiry' }, { label: 'Expired', href: '/pharmacy/Expired' },],
+        items: [
+            { label: 'Inventory',   href: '/pharmacy/Inventory'  },
+            { label: 'Near Expiry', href: '/pharmacy/NearExpiry' },
+            { label: 'Expired',     href: '/pharmacy/Expired'    },
+        ],
     },
     {
         label: 'Account Setting',
         icon: Settings,
-        items: [{ label: 'My Profile', href: '#' }, { label: 'Security', href: '#' }],
+        items: [
+            { label: 'My Profile', href: '/pharmacy/profile'  },
+            { label: 'Security',   href: '/pharmacy/security' },
+        ],
     },
     {
         label: 'Help And Support',
         icon: LifeBuoy,
-        items: [{ label: 'Log Out', href: '/pharmacy/signup' }, { label: 'Complain', href: '#' }],
+        items: [
+            { label: 'Log Out',  href: '/pharmacy/signup'   },
+            { label: 'Complain', href: '/pharmacy/complain' },
+        ],
     },
 ]
 
-function NavSection({ group }: { group: NavGroup }) {
-    const [open, setOpen] = useState(true)
-    const [hovered, setHovered] = useState(false);
-    const Icon = group.icon
-    const pathname = usePathname();
-
-    return (
-        <SidebarGroup style={{ paddingTop: "0.25rem", paddingBottom: "0.25rem" }}>
-            <button
-                type="button"
-                onClick={() => setOpen(!open)}
-                style={{
-                    display: "flex",
-                    width: "100%",
-                    alignItems: "center",
-                    gap: "0.75rem",
-                    borderRadius: "0.5rem",
-                    paddingLeft: "0.5rem",
-                    paddingRight: "0.5rem",
-                    paddingTop: "0.5rem",
-                    paddingBottom: "0.5rem",
-                    textAlign: "left",
-                    fontSize: "0.95rem",
-                    fontWeight: 600,
-                    color: "#1F2B29",
-                    transitionProperty: "color, background-color",
-                    transitionDuration: "150ms",
-                    backgroundColor: hovered ? "#E1F0EA" : "transparent",
-                }}
-                onMouseEnter={() => setHovered(true)}
-                onMouseLeave={() => setHovered(false)}
-                aria-expanded={open}>
-                <Icon color={hovered ? "#145C54" : "#5B6B66"} style={{ width: "20px", height: "20px", transition: "color 150ms" }} />
-                <span style={{ flex: 1 }}>{group.label}</span>
-                <ChevronDown
-                    style={{
-                        color: "#5B6B66",
-                        transform: open ? "rotate(0deg)" : "rotate(-90deg)",
-                        width: "18px",
-                        height: "18px",
-                        transition: "transform 150ms",
-                    }}
-                />
-            </button>
-
-            {open && (
-                <ul style={{
-                    marginTop: "0.25rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.125rem",
-                    paddingLeft: "0.75rem",
-                }}>
-                    {group.items.map((item) => {
-                        const isActive = pathname === item.href;
-
-                        return (
-                            <li key={item.label}>
-                                <Link
-                                    href={item.href}
-                                    aria-current={isActive ? "page" : undefined}
-                                    style={{
-                                        display: "block",
-                                        borderRadius: "0.375rem",
-                                        borderWidth: "1px",
-                                        borderStyle: "solid",
-                                        paddingLeft: "0.75rem",
-                                        paddingRight: "0.75rem",
-                                        paddingTop: "0.375rem",
-                                        paddingBottom: "0.375rem",
-                                        fontSize: "0.875rem",
-                                        transitionProperty: "color, background-color, border-color, box-shadow",
-                                        transitionDuration: "150ms",
-
-                                        borderColor: isActive ? "#145C54" : "transparent",
-                                        backgroundColor: isActive ? "#E1F0EA" : "transparent",
-                                        fontWeight: isActive ? 500 : undefined,
-                                        color: isActive ? "#145C54" : "#5B6B66",
-                                        boxShadow: isActive ? "0 1px 2px rgba(20,92,84,0.12)" : undefined,
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        if (!isActive) e.currentTarget.style.backgroundColor = "#F3F8F5";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
-                                    }}
-                                >
-                                    {item.label}
-                                </Link>
-                            </li>
-                        );
-                    })}
-                </ul>
-            )}
-        </SidebarGroup>
-    )
-}
+/* ─── component ──────────────────────────────────────────────────────── */
 
 export function AppSidebar() {
+    const pathname = usePathname()
+
     return (
-        <Sidebar
-            style={{
-                borderRight: "1px solid #D8E7DF",
-                backgroundColor: "#FBFDFC",
-            }}>
-            <SidebarHeader style={{
-                marginBottom: "1rem",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                paddingLeft: "0.5rem",
-                paddingRight: "0.5rem",
-            }}>
-                <CircleUserRound style={{ width: "1.5rem", height: "1.5rem", color: "#145C54" }} />
-                <span style={{ fontSize: "0.875rem", fontWeight: 500, color: "#1F2B29" }}>Pharmacy name</span>
+        <Sidebar className="border-r border-[#E5E7EB] bg-white">
+
+            {/* Pharmacy identity */}
+            <SidebarHeader className="border-b border-[#E5E7EB] px-4 py-[14px]">
+                <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#2563EB]">
+                        <CircleUserRound className="h-4 w-4 text-white" />
+                    </div>
+                    <span className="text-sm font-semibold text-[#111827]">Pharmacy name</span>
+                </div>
             </SidebarHeader>
 
-            <SidebarContent style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                <SidebarMenuItem>
-                    <SidebarMenuButton style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        borderRadius: "0.375rem",
-                        borderWidth: "1px",
-                        borderStyle: "solid",
-                        borderColor: "#D8E7DF",
-                        paddingLeft: "0.75rem",
-                        paddingRight: "0.75rem",
-                        paddingTop: "0.375rem",
-                        paddingBottom: "0.375rem",
-                        fontSize: "0.875rem",
-                    }}
-                    >
-                        <HomeIcon style={{ color: "#145C54", width: "20px", height: "20px" }} />
-                        <Link href='/pharmacy/Dashboard' style={{ flex: 1 }}>
-                            Dashboard
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        borderRadius: "0.375rem",
-                        borderWidth: "1px",
-                        borderStyle: "solid",
-                        borderColor: "#D8E7DF",
-                        paddingLeft: "0.75rem",
-                        paddingRight: "0.75rem",
-                        paddingTop: "0.375rem",
-                        paddingBottom: "0.375rem",
-                        fontSize: "0.875rem",
-                    }}
-                    >
-                        <Users style={{ color: "#145C54", width: "20px", height: "20px" }} />
-                        <Link href='/pharmacy/Staff' style={{ flex: 1 }}>
-                            Staff
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
+            <SidebarContent className="flex flex-col gap-1 overflow-y-auto px-2 py-3">
 
-                {groups.map((group) => (
-                    <NavSection key={group.label} group={group} />
+                {/* Dashboard & Staff — match Photo 3 "Store" style:
+                    blue icon + bold dark text, dark-fill when active */}
+                {topItems.map(({ label, href, icon: Icon }) => {
+                    const active = pathname === href
+                    return (
+                        <Link
+                            key={label}
+                            href={href}
+                            className={[
+                                'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors',
+                                active
+                                    ? 'bg-[#111827] text-white'
+                                    : 'text-[#111827] hover:bg-[#F3F4F6]',
+                            ].join(' ')}
+                        >
+                            <Icon
+                                className={[
+                                    'h-[1.1rem] w-[1.1rem] shrink-0 transition-colors',
+                                    active
+                                        ? 'text-white'
+                                        : 'text-[#2563EB] group-hover:text-[#2563EB]',
+                                ].join(' ')}
+                            />
+                            {label}
+                        </Link>
+                    )
+                })}
+
+                {/* Sections */}
+                {sections.map(({ label, icon: Icon, items }) => (
+                    <div key={label} className="mt-4">
+
+                        {/* Section label — Photo 1: small-caps, gray, with icon */}
+                        <div className="mb-1 flex items-center gap-1.5 px-3 py-0.5">
+                            <Icon className="h-3.5 w-3.5 shrink-0 text-[#9CA3AF]" />
+                            <span className="text-[0.65rem] font-bold uppercase tracking-widest text-[#9CA3AF]">
+                                {label}
+                            </span>
+                        </div>
+
+                        {/* Section items */}
+                        <div className="flex flex-col gap-0.5">
+                            {items.map(({ label: itemLabel, href }) => {
+                                const active = pathname === href
+                                return (
+                                    <Link
+                                        key={itemLabel}
+                                        href={href}
+                                        className={[
+                                            'flex items-center rounded-lg py-2 pl-8 pr-3 text-sm transition-colors',
+                                            active
+                                                ? 'bg-[#111827] font-medium text-white'
+                                                : 'font-normal text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]',
+                                        ].join(' ')}
+                                    >
+                                        {itemLabel}
+                                    </Link>
+                                )
+                            })}
+                        </div>
+                    </div>
                 ))}
             </SidebarContent>
-            <SidebarFooter></SidebarFooter>
-        </Sidebar>
-    )
-}
 
-/*'use client'
-
-import { useState } from 'react'
-import {
-    Store,
-    Settings,
-    LifeBuoy,
-    ChevronDown,
-    CircleUserRound,
-    HomeIcon
-} from 'lucide-react'
-import { usePathname } from "next/navigation";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenuButton, SidebarMenuItem } from './ui/sidebar';
-import Link from "next/link";
-
-type NavGroup = {
-    label: string
-    icon: React.ComponentType<{ className?: string }>
-    items: NavItem[]
-}
-
-type NavItem = {
-    label: string;
-    href: string;
-}
-
-const groups: NavGroup[] = [
-    {
-        label: 'Store',
-        icon: Store,
-        items: [{ label: 'Inventory', href: '/pharmacy/Inventory' },
-        { label: 'Near Expiry', href: '/pharmacy/NearExpiry' }, { label: 'Expired', href: '/pharmacy/Expired' },],
-    },
-    {
-        label: 'Account Setting',
-        icon: Settings,
-        items: [{ label: 'My Profile', href: '#' }, { label: 'Security', href: '#' }],
-    },
-    {
-        label: 'Help And Support',
-        icon: LifeBuoy,
-        items: [{ label: 'Log Out', href: '/pharmacy/signup' }, { label: 'Complain', href: '#' }],
-    },
-]
-
-function NavSection({ group }: { group: NavGroup }) {
-    const [open, setOpen] = useState(true)
-    const [hovered, setHovered] = useState(false);
-    const Icon = group.icon
-    const pathname = usePathname();
-
-
-    return (
-        <SidebarGroup style={{ paddingTop: "0.25rem", paddingBottom: "0.25rem" }}>
-            <button
-                type="button"
-                onClick={() => setOpen(!open)}
-                style={{
-                    display: "flex",
-                    width: "100%",
-                    alignItems: "center",
-                    gap: "0.75rem",
-                    borderRadius: "0.5rem",
-                    paddingLeft: "0.5rem",
-                    paddingRight: "0.5rem",
-                    paddingTop: "0.5rem",
-                    paddingBottom: "0.5rem",
-                    textAlign: "left",
-                    fontSize: "0.95rem",
-                    fontWeight: 600,
-                    color: "hsl(var(--foreground))",
-                    transitionProperty: "color, background-color",
-                    backgroundColor: hovered ? "hsl(var(--muted))" : "transparent",
-                }}
-                onMouseEnter={() => setHovered(true)}
-                onMouseLeave={() => setHovered(false)}
-                aria-expanded={open}>
-                <Icon />
-                <span style={{
-                    flex: 1,
-                }}>{group.label}</span>
-                <ChevronDown
-                    style={{
-                        color: "black",
-                        transform: open ? "rotate(0deg)" : "rotate(-90deg)",
-                        width: "24px",
-                        height: "24px",
-                    }}
-                />
-            </button>
-
-            {open && (
-                <ul style={{
-                    marginTop: "0.25rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.125rem",
-                    paddingLeft: "0.75rem",
-                }}>
-                    {group.items.map((item) => {
-                        const isActive = pathname === item.href;
-
-                        return (
-                            <li key={item.label}>
-                                <Link
-                                    href={item.href}
-                                    aria-current={isActive ? "page" : undefined}
-                                    style={{
-                                        display: "block",
-                                        borderRadius: "0.375rem",
-                                        borderWidth: "1px",
-                                        borderStyle: "solid",
-                                        paddingLeft: "0.75rem",
-                                        paddingRight: "0.75rem",
-                                        paddingTop: "0.375rem",
-                                        paddingBottom: "0.375rem",
-                                        fontSize: "0.875rem",
-                                        transitionProperty:
-                                            "color, background-color, border-color, box-shadow",
-
-                                        borderColor: isActive
-                                            ? "hsl(var(--border))"
-                                            : "transparent",
-
-                                        backgroundColor: isActive
-                                            ? "hsl(var(--card))"
-                                            : "transparent",
-
-                                        fontWeight: isActive ? 500 : undefined,
-
-                                        color: isActive
-                                            ? "hsl(var(--foreground))"
-                                            : "hsl(var(--muted-foreground))",
-
-                                        boxShadow: isActive
-                                            ? "0 1px 2px rgba(0,0,0,0.1)"
-                                            : undefined,
-                                    }}
-                                >
-                                    {item.label}
-                                </Link>
-                            </li>
-                        );
-                    })}
-                </ul>
-            )}
-        </SidebarGroup>
-    )
-}
-
-export function AppSidebar() {
-    return (
-        <Sidebar
-            style={{
-                borderRight: "1px solid hsl(var(--border))",
-                backgroundColor: "hsl(var(--background))",
-            }}>
-            <SidebarHeader style={{
-                marginBottom: "1rem",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                paddingLeft: "0.5rem",
-                paddingRight: "0.5rem",
-            }}>
-                <CircleUserRound style={{
-                    width: "1.5rem",
-                    height: "1.5rem",
-                    color: "hsl(var(--muted-foreground))",
-                }} />
-                <span style={{
-                    fontSize: "0.875rem",
-                    fontWeight: 500,
-                    color: "hsl(var(--foreground))",
-                }}>Pharmacy name</span>
-            </SidebarHeader>
-
-            <SidebarContent style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.25rem",
-            }}>
-                <SidebarMenuItem >
-                    <SidebarMenuButton style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        borderRadius: "0.375rem",
-                        borderWidth: "1px",
-                        borderStyle: "solid",
-                        paddingLeft: "0.75rem",
-                        paddingRight: "0.75rem",
-                        paddingTop: "0.375rem",
-                        paddingBottom: "0.375rem",
-                        fontSize: "0.875rem",
-                    }}
-                    >
-                        <HomeIcon style={{
-                            color: "black",
-                            width: "24px",
-                            height: "24px",
-                        }} />
-                        <Link href='/pharmacy/Dashboard'
-                        style={{
-                            flex: 1,
-                        }}>
-                            Dashboard
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                {groups.map((group) => (
-                    <NavSection key={group.label} group={group} />
-                ))}
-            </SidebarContent>
-            <SidebarFooter>
-
+            {/* User avatar */}
+            <SidebarFooter className="border-t border-[#E5E7EB] px-4 py-3">
+                <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#111827] text-xs font-bold text-white">
+                        N
+                    </div>
+                    <span className="truncate text-sm text-[#6B7280]">Staff member</span>
+                </div>
             </SidebarFooter>
+
         </Sidebar>
     )
-}*/
+}

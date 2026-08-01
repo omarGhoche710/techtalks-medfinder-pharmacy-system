@@ -4,10 +4,12 @@ export type Medication = {
     code: string;
     stock: number;
     status: string;
-    price: number
+    price: number;
     expiry: Date;
     description: string;
     imageColor: string;
+    discount_percentage?: number | null;
+    discounted_price?: number | null;
 };
 
 export const medications: Medication[] = [

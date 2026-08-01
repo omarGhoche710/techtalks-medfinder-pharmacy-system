@@ -18,7 +18,7 @@ function SortableHeader({
             <Button
                 variant="ghost"
                 onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                className="h-auto p-0 text-xs font-medium uppercase tracking-wide text-[#5B6B66] hover:bg-transparent hover:text-[#145C54]"
+                className="h-auto p-0 text-xs font-medium uppercase tracking-wide text-[#6B7280] hover:bg-transparent hover:text-[#2563EB]"
             >
                 {label}
                 <ArrowUpDown className="ml-1.5 h-3.5 w-3.5" />
@@ -29,7 +29,7 @@ function SortableHeader({
 
 function PlainHeader({ label }: { label: string }) {
     return (
-        <div className="text-center text-xs font-medium uppercase tracking-wide text-[#5B6B66]">
+        <div className="text-center text-xs font-medium uppercase tracking-wide text-[#6B7280]">
             {label}
         </div>
     )
@@ -48,7 +48,7 @@ export function columns(onEdit: (Medication: Medication) => void): ColumnDef<Med
                         }
                         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
                         aria-label="Select all"
-                        className="border-[#D8E7DF] data-[state=checked]:bg-[#145C54] data-[state=checked]:border-[#145C54] data-[state=indeterminate]:bg-[#145C54] data-[state=indeterminate]:border-[#145C54]"
+                        className="border-[#E5E7EB] data-[state=checked]:bg-[#2563EB] data-[state=checked]:border-[#2563EB] data-[state=indeterminate]:bg-[#2563EB] data-[state=indeterminate]:border-[#2563EB]"
                     />
                 </div>
             ),
@@ -58,7 +58,7 @@ export function columns(onEdit: (Medication: Medication) => void): ColumnDef<Med
                         checked={row.getIsSelected()}
                         onCheckedChange={(value) => row.toggleSelected(!!value)}
                         aria-label="Select row"
-                        className="border-[#D8E7DF] data-[state=checked]:bg-[#145C54] data-[state=checked]:border-[#145C54]"
+                        className="border-[#E5E7EB] data-[state=checked]:bg-[#2563EB] data-[state=checked]:border-[#2563EB]"
                     />
                 </div>
             ),
@@ -68,7 +68,7 @@ export function columns(onEdit: (Medication: Medication) => void): ColumnDef<Med
         {
             accessorKey: "code",
             header: () => <PlainHeader label="Code" />,
-            cell: ({ row }) => <div className="text-center text-[#1F2B29]">{row.getValue("code")}</div>,
+            cell: ({ row }) => <div className="text-center text-[#111827]">{row.getValue("code")}</div>,
         },
         {
             accessorKey: "image",
@@ -78,12 +78,12 @@ export function columns(onEdit: (Medication: Medication) => void): ColumnDef<Med
         {
             accessorKey: "name",
             header: ({ column }) => <SortableHeader label="Name" column={column} />,
-            cell: ({ row }) => <div className="text-center font-medium text-[#1F2B29]">{row.getValue("name")}</div>,
+            cell: ({ row }) => <div className="text-center font-medium text-[#111827]">{row.getValue("name")}</div>,
         },
         {
             accessorKey: "stock",
             header: ({ column }) => <SortableHeader label="Quantity" column={column} />,
-            cell: ({ row }) => <div className="text-center text-[#1F2B29]">{row.getValue("stock")}</div>,
+            cell: ({ row }) => <div className="text-center text-[#111827]">{row.getValue("stock")}</div>,
         },
         {
             accessorKey: "price",
@@ -95,7 +95,7 @@ export function columns(onEdit: (Medication: Medication) => void): ColumnDef<Med
                     currency: "USD",
                 }).format(price)
 
-                return <div className="text-center font-medium text-[#1F2B29]">{formatted}</div>
+                return <div className="text-center font-medium text-[#111827]">{formatted}</div>
             }, //make this display on hover "price before discount"
         },
         {
@@ -104,18 +104,18 @@ export function columns(onEdit: (Medication: Medication) => void): ColumnDef<Med
             cell: ({ row }) => {
                 const expiry: Date = new Date(row.getValue("expiry") as string);
                 const formattedDate = expiry.toLocaleDateString('en-GB');
-                return <div className="text-center font-medium text-[#1F2B29]">{formattedDate}</div>
+                return <div className="text-center font-medium text-[#111827]">{formattedDate}</div>
             }
         },
         {
             accessorKey: "description",
             header: () => <PlainHeader label="Description" />,
-            cell: ({ row }) => <div className="text-center text-[#1F2B29]">{row.getValue("description")}</div>, //this contains a link to view further description and ingredients
+            cell: ({ row }) => <div className="text-center text-[#111827]">{row.getValue("description")}</div>, //this contains a link to view further description and ingredients
         },
         {
             accessorKey: "discount_percentage",
             header: () => <PlainHeader label="Discount" />,
-            cell: ({ row }) => <div className="text-center text-[#1F2B29]">{row.getValue("discount_percentage")}%</div>,
+            cell: ({ row }) => <div className="text-center text-[#111827]">{row.getValue("discount_percentage")}%</div>,
         },
         {
             accessorKey: "discounted_price",
@@ -127,7 +127,7 @@ export function columns(onEdit: (Medication: Medication) => void): ColumnDef<Med
                     currency: "USD",
                 }).format(price)
 
-                return <div className="text-center font-medium text-[#1F2B29]">{formatted}</div>
+                return <div className="text-center font-medium text-[#111827]">{formatted}</div>
             }, //make this display on hover "price after discount"
         },
         {
@@ -138,7 +138,7 @@ export function columns(onEdit: (Medication: Medication) => void): ColumnDef<Med
                     <div className="flex justify-center">
                         <button
                             onClick={() => onEdit(row.original)}
-                            className="text-[#5B6B66] transition-colors hover:text-[#145C54]"
+                            className="text-[#6B7280] transition-colors hover:text-[#2563EB]"
                             aria-label="Edit medication"
                         >
                             <EditIcon height="1.5em" />

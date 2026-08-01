@@ -1,51 +1,19 @@
-const columns = [
-  {
-    title: 'Features',
-    links: ['Core features', 'Pro experience', 'Integrations'],
-  },
-  {
-    title: 'Learn more',
-    links: ['Blog', 'Case studies', 'Customer stories', 'Best practices'],
-  },
-  {
-    title: 'Support',
-    links: ['Contact us', 'View team', 'Legal'],
-  },
-]
+import Link from "next/link";
+import { CircleUserRound } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="mt-24 border-t border-[#D8E7DF] bg-[#FBFDFC] px-6 py-12 md:px-10">
-      <div className="flex flex-col gap-10 lg:flex-row lg:justify-between">
-        <div className="max-w-sm">
-          <h2 className="text-3xl font-bold text-[#145C54]">MedFinder</h2>
-          <p className="mt-3 text-sm leading-relaxed text-[#5B6B66]">
-            Accessible medicine and ease of control is our main focus.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:gap-16">
-          {columns.map((column) => (
-            <div key={column.title}>
-              <h3 className="text-sm font-semibold text-[#1F2B29]">
-                {column.title}
-              </h3>
-              <ul className="mt-4 space-y-3">
-                {column.links.map((link) => (
-                  <li key={link}>
-                    <a
-                      href="#"
-                      className="text-sm text-[#5B6B66] transition-colors hover:text-[#145C54]"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+    <header className="border-b border-[#E5E7EB] bg-white px-6 py-4">
+      <div className="flex items-center justify-between">
+        <span className="text-lg font-bold text-[#111827]">MedFinder</span>
+        <Link
+          href="/pharmacy/profile"
+          className="flex items-center gap-2 rounded-xl border border-[#E5E7EB] px-3 py-2 text-sm text-[#111827] hover:bg-[#F3F4F6] transition-colors"
+        >
+          <CircleUserRound className="w-4 h-4 text-[#2563EB]" />
+          Profile
+        </Link>
       </div>
-    </footer >
+    </header>
   )
 }
