@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
+import { sendTransferNotification } from "@/lib/notifications";
 import { db } from "@/lib/db";
 import { handleError } from "@/lib/utils";
 
@@ -82,6 +82,7 @@ export async function POST(
       },
       include: {
         medication: true,
+        toPharmacy: true,
       },
     });
 
@@ -92,6 +93,32 @@ export async function POST(
         },
         {
           status: 404,
+        },
+      );
+    }
+    // --------------------------------------
+    // Destination pharmacy must still exist
+    // and be approved
+    // --------------------------------------
+
+    if (!transfer.toPharmacy) {
+      return NextResponse.json(
+        {
+          message: "Destination pharmacy not found.",
+        },
+        {
+          status: 404,
+        },
+      );
+    }
+
+    if (!transfer.toPharmacy.is_approved) {
+      return NextResponse.json(
+        {
+          message: "Destination pharmacy is unavailable.",
+        },
+        {
+          status: 400,
         },
       );
     }
@@ -173,7 +200,7 @@ export async function POST(
     // --------------------------------------
     // Return Updated Transfer
     // --------------------------------------
-
+    await sendTransferNotification(id, "CONFIRMED");
     const updatedTransfer = await db.transfer.findUnique({
       where: {
         id,

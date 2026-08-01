@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
+import { sendTransferNotification } from "@/lib/notifications";
 import { db } from "@/lib/db";
 import { handleError } from "@/lib/utils";
 
@@ -79,6 +79,7 @@ export async function POST(
         toPharmacy: true,
       },
     });
+    await sendTransferNotification(id, "CANCELLED");
 
     return NextResponse.json(updatedTransfer, {
       status: 200,
