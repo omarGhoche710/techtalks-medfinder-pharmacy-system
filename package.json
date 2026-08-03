@@ -15,6 +15,7 @@
     "@clerk/nextjs": "^7.6.1",
     "@prisma/adapter-pg": "^7.9.0",
     "@prisma/client": "^7.8.0",
+    "@prisma/extension-accelerate": "^3.0.1",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.1",
     "dotenv": "^17.4.2",
