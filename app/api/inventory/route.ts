@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { handleError } from "@/lib/utils";
+import { getCurrentPharmacyId } from "@/lib/getCurrentPharmacy";
 
 function mapMedicationToInventory(medication: any) {
   return {
@@ -64,7 +65,8 @@ export async function POST(request: NextRequest) {
     const code = body.code?.toString().trim();
     const name = (body.medicationName || body.name)?.toString().trim();
     const description = body.description?.toString().trim() || null;
-    const pharmacyId = body.pharmacyId?.toString().trim();
+    // pharmacyId can come from the body or be resolved server-side from auth
+    const pharmacyId = body.pharmacyId?.toString().trim() || await getCurrentPharmacyId();
     const quantity = Number(body.quantity);
     const price = Number(body.price);
     const expiryDate = body.expiryDate?.toString().trim();
@@ -111,15 +113,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const expiredDate = new Date(expiryDate);
+    const today = new Date();
+    const daysUntilExpiry = Math.ceil((expiredDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const status = daysUntilExpiry <= 0 ? "DAMAGED" : daysUntilExpiry <= 30 ? "NEAR_EXPIRY" : "ACTIVE";
+
     const medication = await db.medication.create({
       data: {
         code,
         name,
         description,
         pharmacy_id: pharmacyId,
-        date_expired: new Date(expiryDate),
+        date_expired: expiredDate,
         stock: quantity,
         price,
+        status,
       },
       include: {
         pharmacy: true,
