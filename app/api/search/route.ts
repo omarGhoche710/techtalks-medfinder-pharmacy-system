@@ -1,4 +1,5 @@
-﻿import { db } from "@/lib/db";
+﻿import type { Pharmacy_Days } from "@/app/generated/prisma/client";
+import { db } from "@/lib/db";
 import { haversineKm } from "@/lib/geo";
 import { handleError } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
@@ -13,7 +14,7 @@ function formatStockStatus(stock: number) {
   return "in_stock";
 }
 
-function formatPharmacyHours(hours: any) {
+function formatPharmacyHours(hours: Pharmacy_Days | null) {
   if (!hours) return "Not available";
 
   const days = [
@@ -37,9 +38,8 @@ function formatPharmacyHours(hours: any) {
 
 export async function GET(request: NextRequest) {
   try {
-      // Rate limit check
-const rateLimitResponse = await checkRateLimit(request, rateLimiters.search);
-if (rateLimitResponse) return rateLimitResponse;
+    const rateLimitResponse = await checkRateLimit(request, rateLimiters.search);
+    if (rateLimitResponse) return rateLimitResponse;
     const params = request.nextUrl.searchParams;
 
     const query = params.get("q")?.trim() ?? "";
@@ -126,10 +126,10 @@ if (rateLimitResponse) return rateLimitResponse;
           status: med.status,
           isTransferable: med.is_transferable,
           demandSignal: med.stock === 0
-    ? "critical"
-    : med.stock < 20
-    ? "low"
-    : null,
+            ? "critical"
+            : med.stock < 20
+              ? "low"
+              : null,
         },
 
         inventory: {

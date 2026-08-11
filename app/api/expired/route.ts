@@ -1,27 +1,9 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 
+import type { Prisma } from "@/app/generated/prisma/client";
 import { db } from "@/lib/db";
+import { mapMedicationToInventory } from "@/lib/inventory-mapper";
 import { handleError } from "@/lib/utils";
-
-function mapMedicationToInventory(medication: any) {
-  return {
-    id: medication.id,
-    code: medication.code,
-    medicationId: medication.id,
-    medicationName: medication.name,
-    pharmacyId: medication.pharmacy_id,
-    pharmacyName: medication.pharmacy.name,
-    pharmacyAddress: medication.pharmacy.address,
-    pharmacyLat: medication.pharmacy.lat,
-    pharmacyLng: medication.pharmacy.lng,
-    quantity: medication.stock,
-    price: medication.price,
-    expiryDate: medication.date_expired.toISOString(),
-    status: medication.status,
-    discountPercentage: medication.discount_percentage,
-    discountedPrice: medication.discounted_price,
-  };
-}
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,7 +14,7 @@ export async function GET(request: NextRequest) {
     const thirtyDaysFromNow = new Date(today);
     thirtyDaysFromNow.setDate(today.getDate() + 30);
 
-    const where: any = {
+    const where: Prisma.MedicationWhereInput = {
       date_expired: {
         lte: thirtyDaysFromNow,
       },

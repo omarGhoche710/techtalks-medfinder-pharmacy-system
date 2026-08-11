@@ -45,7 +45,7 @@ export async function checkRateLimit(
     request.headers.get("x-real-ip") ??
     "anonymous";
 
-  const { success, limit, remaining, reset } = await limiter.limit(ip);
+  const { success, limit, reset } = await limiter.limit(ip);
 
   if (!success) {
     return NextResponse.json(

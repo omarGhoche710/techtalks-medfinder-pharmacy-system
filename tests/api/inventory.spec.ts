@@ -1,6 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { faker } from "@faker-js/faker";
 
+import type { InventoryItem } from "@/lib/inventory-mapper";
+
 test.describe("Inventory API", () => {
 
   // ============================================
@@ -43,7 +45,7 @@ test.describe("Inventory API", () => {
       );
       expect(filtered.status()).toBe(200);
       const filteredBody = await filtered.json();
-      filteredBody.forEach((item: any) => {
+      filteredBody.forEach((item: InventoryItem) => {
         expect(item.pharmacyId).toBe(pharmacyId);
       });
     }
@@ -60,7 +62,7 @@ test.describe("Inventory API", () => {
       );
       expect(filtered.status()).toBe(200);
       const filteredBody = await filtered.json();
-      filteredBody.forEach((item: any) => {
+      filteredBody.forEach((item: InventoryItem) => {
         expect(item.medicationId).toBe(medicationId);
       });
     }
@@ -204,7 +206,7 @@ test.describe("Inventory API", () => {
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
-    body.forEach((item: any) => {
+    body.forEach((item: InventoryItem) => {
       const expiryDate = new Date(item.expiryDate);
       expect(expiryDate.getTime()).toBeLessThanOrEqual(
         thirtyDaysFromNow.getTime()

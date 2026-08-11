@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { deleteEmployee } from "@/lib/database/queries/invitation";
 import { requirePharmacyAccess } from "@/lib/auth/requirePharmacyAccess";
 import { NextResponse } from "next/server";

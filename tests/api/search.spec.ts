@@ -1,5 +1,31 @@
 import { test, expect } from "@playwright/test";
 
+type SearchApiResult = {
+  id: string;
+  medication: {
+    demandSignal: "critical" | "low" | null;
+  };
+  inventory: {
+    quantity: number;
+    stockStatus: string;
+  };
+  pharmacy: {
+    distanceKm: number | null;
+  };
+};
+
+type SearchApiResponse = {
+  results: SearchApiResult[];
+  meta: {
+    total: number;
+    pageSize: number;
+    page: number;
+    totalPages: number;
+    nearMe?: boolean;
+    query?: string;
+  };
+};
+
 test.describe("Search API", () => {
 
   // ============================================
@@ -79,9 +105,9 @@ test.describe("Search API", () => {
     expect(response.status()).toBe(200);
     const body = await response.json();
 
-    const distances = body.results
-      .map((r: any) => r.pharmacy.distanceKm)
-      .filter((d: any) => d !== null);
+    const distances = (body as SearchApiResponse).results
+      .map((r) => r.pharmacy.distanceKm)
+      .filter((d): d is number => d !== null);
 
     for (let i = 1; i < distances.length; i++) {
       expect(distances[i]).toBeGreaterThanOrEqual(distances[i - 1]);
@@ -114,7 +140,7 @@ test.describe("Search API", () => {
     expect(response.status()).toBe(200);
     const body = await response.json();
 
-    body.results.forEach((result: any) => {
+    (body as SearchApiResponse).results.forEach((result) => {
       expect(result.inventory.quantity).toBeGreaterThan(0);
       expect(result.inventory.stockStatus).not.toBe("out_of_stock");
     });

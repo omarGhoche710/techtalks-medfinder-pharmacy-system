@@ -3,7 +3,6 @@
 import type { SearchResult } from "@/lib/types";
 import { useMemo } from "react";
 import { DEFAULT_LOCATION } from "@/data/pharmacies";
-import { haversineKm } from "@/lib/geo";
 
 type PharmacyMapProps = {
   results: SearchResult[];
@@ -84,7 +83,6 @@ export default function PharmacyMap({
     maxLat,
     minLng,
     maxLng,
-    allCoords,
   } = useMemo(() => {
 
     // The map should always frame exactly the pharmacies shown to the user.
@@ -174,7 +172,6 @@ export default function PharmacyMap({
       maxLat: _maxLat,
       minLng: _minLng,
       maxLng: _maxLng,
-      allCoords: allCoords,
     };
 
 

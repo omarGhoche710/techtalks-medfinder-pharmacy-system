@@ -1,10 +1,8 @@
 import { test, expect } from "@playwright/test";
-import { faker } from "@faker-js/faker";
 
-// We'll store IDs created during tests to use across test cases
-let createdMedicationId: string;
-let createdPharmacyId: string;
-let createdTransactionId: string;
+type TransactionListItem = {
+  type: string;
+};
 
 test.describe("Transactions API", () => {
 
@@ -24,7 +22,7 @@ test.describe("Transactions API", () => {
     expect(response.status()).toBe(200);
     const body = await response.json();
     expect(Array.isArray(body)).toBe(true);
-    body.forEach((t: any) => {
+    (body as TransactionListItem[]).forEach((t) => {
       expect(t.type).toBe("STOCK_IN");
     });
   });
@@ -34,7 +32,7 @@ test.describe("Transactions API", () => {
     expect(response.status()).toBe(200);
     const body = await response.json();
     expect(Array.isArray(body)).toBe(true);
-    body.forEach((t: any) => {
+    (body as TransactionListItem[]).forEach((t) => {
       expect(t.type).toBe("DISPENSE");
     });
   });
@@ -44,7 +42,7 @@ test.describe("Transactions API", () => {
     expect(response.status()).toBe(200);
     const body = await response.json();
     expect(Array.isArray(body)).toBe(true);
-    body.forEach((t: any) => {
+    (body as TransactionListItem[]).forEach((t) => {
       expect(t.type).toBe("DAMAGE");
     });
   });

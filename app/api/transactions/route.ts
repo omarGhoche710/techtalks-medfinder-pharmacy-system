@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { TransactionType } from "@/app/generated/prisma/client";
+import type { Prisma } from "@/app/generated/prisma/client";
 import { handleError } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
@@ -26,7 +27,11 @@ function parseTransactionType(value: string | null): TransactionType | null {
   }
 }
 
-function mapTransaction(transaction: any) {
+type TransactionWithRelations = Prisma.TransactionGetPayload<{
+  include: { medication: true; pharmacy: true; user: true };
+}>;
+
+function mapTransaction(transaction: TransactionWithRelations) {
   return {
     id: transaction.id,
     type: transaction.type,
@@ -49,7 +54,7 @@ export async function GET(request: NextRequest) {
     const medicationId = searchParams.get("medicationId");
     const pharmacyId = searchParams.get("pharmacyId");
 
-    const where: any = {};
+    const where: Prisma.TransactionWhereInput = {};
     if (type) where.type = type;
     if (medicationId) where.medication_id = medicationId;
     if (pharmacyId) where.pharmacy_id = pharmacyId;

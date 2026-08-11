@@ -1,28 +1,10 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 
+import type { Prisma } from "@/app/generated/prisma/client";
 import { db } from "@/lib/db";
-import { handleError } from "@/lib/utils";
+import { mapMedicationToInventory } from "@/lib/inventory-mapper";
 import { verifyPharmacyMembership } from "@/lib/pharmacy-auth";
-
-function mapMedicationToInventory(medication: any) {
-  return {
-    id: medication.id,
-    code: medication.code,
-    medicationId: medication.id,
-    medicationName: medication.name,
-    pharmacyId: medication.pharmacy_id,
-    pharmacyName: medication.pharmacy.name,
-    pharmacyAddress: medication.pharmacy.address,
-    pharmacyLat: medication.pharmacy.lat,
-    pharmacyLng: medication.pharmacy.lng,
-    quantity: medication.stock,
-    price: medication.price,
-    expiryDate: medication.date_expired.toISOString(),
-    status: medication.status,
-    discountPercentage: medication.discount_percentage,
-    discountedPrice: medication.discounted_price,
-  };
-}
+import { handleError } from "@/lib/utils";
 
 export async function PATCH(
   request: NextRequest,
@@ -60,17 +42,15 @@ export async function PATCH(
       );
     }
 
-    // Block direct stock changes — must use /api/transactions instead
-if (quantity !== undefined) {
-  return NextResponse.json(
-    {
-      error: "Stock cannot be updated directly. Use POST /api/transactions with type STOCK_IN, DISPENSE, or DAMAGE to adjust stock. This ensures every stock movement is recorded.",
-    },
-    { status: 400 }
-  );
-}
+    if (quantity !== undefined) {
+      return NextResponse.json(
+        {
+          error: "Stock cannot be updated directly. Use POST /api/transactions with type STOCK_IN, DISPENSE, or DAMAGE to adjust stock. This ensures every stock movement is recorded.",
+        },
+        { status: 400 },
+      );
+    }
 
-// Find medication first to get pharmacyId
     const medication = await db.medication.findUnique({
       where: { id },
       include: { pharmacy: true },
@@ -96,11 +76,10 @@ if (quantity !== undefined) {
       }
     }
 
-    const data: any = {};
+    const data: Prisma.MedicationUpdateInput = {};
     if (code) data.code = code;
     if (name) data.name = name;
     if (description !== undefined) data.description = description;
-    if (quantity !== undefined) data.stock = quantity;
     if (price !== undefined) data.price = price;
     if (expiryDate) data.date_expired = new Date(expiryDate);
 
@@ -146,7 +125,6 @@ export async function DELETE(
       );
     }
 
-    // Verify the user is an active member of this pharmacy
     const { error } = await verifyPharmacyMembership(medication.pharmacy_id);
     if (error) return error;
 
