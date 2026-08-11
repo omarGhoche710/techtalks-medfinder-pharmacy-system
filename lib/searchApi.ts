@@ -1,15 +1,77 @@
-﻿import type { SearchParams, SearchPage, SearchResult, Suggestion } from "@/lib/types";
+﻿import type {
+  SearchParams,
+  SearchPage,
+  SearchResult,
+  StockStatus,
+  Suggestion,
+} from "@/lib/types";
 
-export type SearchApiResponse = {
-  results: SearchResult[];
-  query?: string;
-  nearMe?: boolean;
-  total?: number;
-  page?: number;
-  pageSize?: number;
-  totalPages?: number;
+type ApiSearchResult = {
+  id: string;
+  medication: {
+    name: string;
+    code: string;
+    description: string;
+    price: number;
+    discountedPrice: number | null;
+    daysToExpiry: number | null;
+  };
+  inventory: {
+    quantity: number;
+    stockStatus: StockStatus;
+  };
+  pharmacy: {
+    id: string;
+    name: string;
+    address: string;
+    phone: string;
+    lat: number;
+    lng: number;
+    hours: string;
+    distanceKm: number | null;
+  };
+};
+
+type SearchApiResponse = {
+  results?: ApiSearchResult[];
+  meta?: {
+    total?: number;
+    page?: number;
+    pageSize?: number;
+    totalPages?: number;
+  };
   error?: string;
 };
+
+function mapApiResultToSearchResult(result: ApiSearchResult): SearchResult {
+  const hasDiscount =
+    result.medication.discountedPrice !== null &&
+    result.medication.discountedPrice < result.medication.price;
+
+  return {
+    id: result.id,
+    medicineName: result.medication.name,
+    medicineCode: result.medication.code,
+    pharmacy: {
+      id: result.pharmacy.id,
+      name: result.pharmacy.name,
+      address: result.pharmacy.address,
+      lat: result.pharmacy.lat,
+      lng: result.pharmacy.lng,
+      phone: result.pharmacy.phone,
+      hours: result.pharmacy.hours,
+    },
+    price: hasDiscount
+      ? result.medication.discountedPrice!
+      : result.medication.price,
+    originalPrice: hasDiscount ? result.medication.price : undefined,
+    stock: result.inventory.stockStatus,
+    quantity: result.inventory.quantity,
+    distanceKm: result.pharmacy.distanceKm,
+    description: result.medication.description,
+    daysToExpiry: result.medication.daysToExpiry,
+  };
+}
 
 function resultsToSuggestions(results: SearchResult[]): Suggestion[] {
   const medicineNames = new Set<string>();
@@ -33,7 +95,7 @@ function resultsToSuggestions(results: SearchResult[]): Suggestion[] {
 }
 
 export async function fetchSearchResults(
-  params: SearchParams
+  params: SearchParams,
 ): Promise<SearchPage> {
   const url = new URL("/api/search", window.location.origin);
   url.searchParams.set("q", params.query);
@@ -44,7 +106,7 @@ export async function fetchSearchResults(
   if (params.pageSize) url.searchParams.set("pageSize", String(params.pageSize));
 
   const res = await fetch(url.toString());
-  const payload = (await res.json().catch(() => ({}))) as Partial<SearchApiResponse>;
+  const payload = (await res.json().catch(() => ({}))) as SearchApiResponse;
   if (!res.ok) {
     throw new Error(payload.error ?? "Search failed");
   }
@@ -59,24 +121,24 @@ export async function fetchSearchResults(
     };
   }
 
-  const results = payload.results as SearchResult[];
-  const pageSize = payload.pageSize ?? params.pageSize ?? 5;
-  const total = payload.total ?? results.length;
+  const results = payload.results.map(mapApiResultToSearchResult);
+  const meta = payload.meta ?? {};
+  const pageSize = meta.pageSize ?? params.pageSize ?? 5;
+  const total = meta.total ?? results.length;
   const totalPages =
-    payload.totalPages ??
-    (total === 0 ? 0 : Math.ceil(total / pageSize));
+    meta.totalPages ?? (total === 0 ? 0 : Math.ceil(total / pageSize));
 
   return {
     results,
     total,
-    page: payload.page ?? params.page ?? 1,
+    page: meta.page ?? params.page ?? 1,
     pageSize,
     totalPages,
   };
 }
 
 export async function fetchSuggestions(
-  params: SearchParams
+  params: SearchParams,
 ): Promise<Suggestion[]> {
   const searchPage = await fetchSearchResults(params);
   return resultsToSuggestions(searchPage.results);

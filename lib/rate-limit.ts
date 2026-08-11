@@ -2,62 +2,50 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { NextRequest, NextResponse } from "next/server";
 
-// Create Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+const isRateLimitEnabled = Boolean(redisUrl && redisToken);
 
-// Different rate limit tiers
+const redis = isRateLimitEnabled
+  ? new Redis({
+      url: redisUrl!,
+      token: redisToken!,
+    })
+  : null;
+
+function createLimiter(
+  limit: number,
+  prefix: string,
+): Ratelimit | null {
+  if (!redis) return null;
+
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(limit, "1 m"),
+    prefix,
+  });
+}
+
+// Different rate limit tiers (no-op when Redis env vars are unset)
 export const rateLimiters = {
-
-  // Search endpoint — 30 requests per minute
-  search: new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(30, "1 m"),
-    prefix: "ratelimit:search",
-  }),
-
-  // Inventory write operations — 20 requests per minute
-  inventory: new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(20, "1 m"),
-    prefix: "ratelimit:inventory",
-  }),
-
-  // Transactions — 10 requests per minute
-  transactions: new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(10, "1 m"),
-    prefix: "ratelimit:transactions",
-  }),
-
-  // General API — 60 requests per minute
-  general: new Ratelimit({
-    redis,
-    limiter: Ratelimit.slidingWindow(60, "1 m"),
-    prefix: "ratelimit:general",
-  }),
-
+  search: createLimiter(30, "ratelimit:search"),
+  inventory: createLimiter(20, "ratelimit:inventory"),
+  transactions: createLimiter(10, "ratelimit:transactions"),
+  general: createLimiter(60, "ratelimit:general"),
 };
-
-// ============================================
-// RATE LIMIT MIDDLEWARE HELPER
-// ============================================
 
 export async function checkRateLimit(
   request: NextRequest,
-  limiter: Ratelimit,
+  limiter: Ratelimit | null,
 ): Promise<NextResponse | null> {
+  if (!limiter) return null;
 
-  // Use IP address as identifier
   const ip =
     request.headers.get("x-forwarded-for") ??
     request.headers.get("x-real-ip") ??
     "anonymous";
 
-  const { success, limit, remaining, reset } =
-    await limiter.limit(ip);
+  const { success, limit, remaining, reset } = await limiter.limit(ip);
 
   if (!success) {
     return NextResponse.json(
@@ -75,7 +63,7 @@ export async function checkRateLimit(
           "X-RateLimit-Reset": String(reset),
           "Retry-After": String(Math.ceil((reset - Date.now()) / 1000)),
         },
-      }
+      },
     );
   }
 

@@ -73,42 +73,68 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // Look up destination-pharmacy stock (transfer.medication is at the source)
+    const destinationMedications =
+      manualRequests.length > 0
+        ? await db.medication.findMany({
+            where: {
+              OR: manualRequests.map((transfer) => ({
+                pharmacy_id: transfer.to_pharmacy_id,
+                name: transfer.medication.name,
+              })),
+            },
+          })
+        : [];
+
+    const destinationStockByKey = new Map(
+      destinationMedications.map((med) => [
+        `${med.pharmacy_id}:${med.name}`,
+        med,
+      ]),
+    );
+
     // Shape manual demand signals from pending transfers
-    const manualSignals = manualRequests.map((transfer) => ({
-      signalType: "manual",
-      urgency: "requested",
-      pharmacy: {
-        id: transfer.toPharmacy.id,
-        name: transfer.toPharmacy.name,
-        address: transfer.toPharmacy.address,
-        lat: transfer.toPharmacy.lat,
-        lng: transfer.toPharmacy.lng,
-        distanceKm: hasLocation
-          ? haversineKm(
-              lat,
-              lng,
-              transfer.toPharmacy.lat,
-              transfer.toPharmacy.lng
-            )
-          : null,
-      },
-      medication: {
-        id: transfer.medication.id,
-        name: transfer.medication.name,
-        code: transfer.medication.code,
-        currentStock: transfer.medication.stock,
-        status: transfer.medication.status,
-      },
-      transfer: {
-        id: transfer.id,
-        quantity: transfer.quantity,
-        reason: transfer.reason,
-        requestedFrom: {
-          id: transfer.fromPharmacy.id,
-          name: transfer.fromPharmacy.name,
+    const manualSignals = manualRequests.map((transfer) => {
+      const destinationMedication = destinationStockByKey.get(
+        `${transfer.to_pharmacy_id}:${transfer.medication.name}`,
+      );
+
+      return {
+        signalType: "manual",
+        urgency: "requested",
+        pharmacy: {
+          id: transfer.toPharmacy.id,
+          name: transfer.toPharmacy.name,
+          address: transfer.toPharmacy.address,
+          lat: transfer.toPharmacy.lat,
+          lng: transfer.toPharmacy.lng,
+          distanceKm: hasLocation
+            ? haversineKm(
+                lat,
+                lng,
+                transfer.toPharmacy.lat,
+                transfer.toPharmacy.lng,
+              )
+            : null,
         },
-      },
-    }));
+        medication: {
+          id: destinationMedication?.id ?? transfer.medication.id,
+          name: transfer.medication.name,
+          code: transfer.medication.code,
+          currentStock: destinationMedication?.stock ?? 0,
+          status: destinationMedication?.status ?? transfer.medication.status,
+        },
+        transfer: {
+          id: transfer.id,
+          quantity: transfer.quantity,
+          reason: transfer.reason,
+          requestedFrom: {
+            id: transfer.fromPharmacy.id,
+            name: transfer.fromPharmacy.name,
+          },
+        },
+      };
+    });
 
     // Combine both signal types
     const allSignals = [...autoSignals, ...manualSignals];

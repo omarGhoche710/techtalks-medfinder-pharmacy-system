@@ -1,8 +1,9 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
-import { handleError } from "@/lib/utils";
+import { verifyPharmacyMembership } from "@/lib/pharmacy-auth";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
+import { handleError } from "@/lib/utils";
 
 function mapMedicationToInventory(medication: any) {
   return {
@@ -60,9 +61,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-
-        const rateLimitResponse = await checkRateLimit(request, rateLimiters.inventory);
-if (rateLimitResponse) return rateLimitResponse;
+    const rateLimitResponse = await checkRateLimit(request, rateLimiters.inventory);
+    if (rateLimitResponse) return rateLimitResponse;
     const body = await request.json();
 
     const code = body.code?.toString().trim();
@@ -82,16 +82,16 @@ if (rateLimitResponse) return rateLimitResponse;
       );
     }
 
-    // Verify the user is an active member of this pharmacy
-    const { error } = await verifyPharmacyMembership(pharmacyId);
-    if (error) return error;
-
     if (quantity < 0 || price < 0) {
       return NextResponse.json(
         { error: "quantity and price must be non-negative." },
         { status: 400 },
       );
     }
+
+    // Verify the user is an active member of this pharmacy
+    const { error } = await verifyPharmacyMembership(pharmacyId);
+    if (error) return error;
 
     const existingCode = await db.medication.findUnique({
       where: {
@@ -142,10 +142,5 @@ if (rateLimitResponse) return rateLimitResponse;
       { status: 500 },
     );
   }
-} 
-
-function verifyPharmacyMembership(pharmacyId: any): { error: any; } | PromiseLike<{ error: any; }> {
-  throw new Error("Function not implemented.");
 }
-
 

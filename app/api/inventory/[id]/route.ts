@@ -83,6 +83,9 @@ if (quantity !== undefined) {
       );
     }
 
+    const { error } = await verifyPharmacyMembership(medication.pharmacy_id);
+    if (error) return error;
+
     if (code) {
       const existingCode = await db.medication.findUnique({ where: { code } });
       if (existingCode && existingCode.id !== id) {
