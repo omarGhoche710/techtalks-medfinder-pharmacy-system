@@ -85,34 +85,10 @@ export async function POST(request: NextRequest) {
     );
     if (rateLimitResponse) return rateLimitResponse;
 
-    // Step 1: Get logged in user from Clerk session
-    const { userId: clerkId } = await auth();
-
-    if (!clerkId) {
-      return NextResponse.json(
-        { error: "Unauthorized — you must be logged in." },
-        { status: 401 },
-      );
-    }
-
-    // Step 2: Find user in database using clerkId from session
-    const user = await db.user.findUnique({
-      where: { clerkId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found." },
-        { status: 404 },
-      );
-    }
-
-    // Step 3: Parse request body
     const body = await request.json();
     const medicationId = body.medicationId || body.medication_id;
     const quantity = Number(body.quantity);
 
-    // Step 4: Validate raw body fields before parsing
     const { valid, error } = validate(
       {
         type: body.type,
@@ -140,7 +116,6 @@ export async function POST(request: NextRequest) {
 
     if (!valid) return validationError(error!);
 
-    // Step 5: Parse transaction type after validation
     const type = parseTransactionType(body.type);
 
     if (!type) {
@@ -150,7 +125,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 6: Find medication
+    const { userId: clerkId } = await auth();
+
+    if (!clerkId) {
+      return NextResponse.json(
+        { error: "Unauthorized — you must be logged in." },
+        { status: 401 },
+      );
+    }
+
+    const user = await db.user.findUnique({
+      where: { clerkId },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found." },
+        { status: 404 },
+      );
+    }
+
+    // Find medication
     const medication = await db.medication.findUnique({
       where: { id: medicationId },
     });
