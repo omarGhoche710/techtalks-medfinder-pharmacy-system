@@ -61,6 +61,9 @@ test.describe("Authenticated API", () => {
     const authed = createAuthenticatedRequest(request);
     const item = await fetchOwnerInventoryItem(request);
     test.skip(!item, "No seeded inventory data");
+    if(!item) {
+      return;
+    }
 
     const response = await authed.patch(`/api/inventory/${item.id}`, {
       data: {
@@ -97,6 +100,9 @@ test.describe("Authenticated API", () => {
     const authed = createAuthenticatedRequest(request);
     const item = await fetchOwnerInventoryItem(request);
     test.skip(!item, "No seeded inventory data");
+    if(!item) {
+      return;
+    }
 
     const beforeResponse = await request.get("/api/inventory");
     const beforeInventory = (await beforeResponse.json()) as {
@@ -105,7 +111,9 @@ test.describe("Authenticated API", () => {
     }[];
     const before = beforeInventory.find((entry) => entry.id === item.id);
     test.skip(!before, "Inventory item missing from list");
-
+    if(!before) {
+      return;
+    }
     const response = await authed.post("/api/transactions", {
       data: {
         type: "STOCK_IN",
