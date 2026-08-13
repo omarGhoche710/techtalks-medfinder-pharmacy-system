@@ -19,6 +19,11 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
   const pathname = req.nextUrl.pathname;
 
+  const testClerkId = req.headers.get("x-test-clerk-id");
+  if (process.env.PLAYWRIGHT_AUTH_BYPASS === "true" && testClerkId) {
+    return NextResponse.next();
+  }
+
   const isPublic =
     // pathname === '/' ||
     publicPaths.some((path) => pathname.startsWith(path));

@@ -1,10 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
+import { getSessionClerkId } from "@/lib/auth/session";
 import { NextResponse } from "next/server";
 
 export async function verifyPharmacyMembership(pharmacyId: string) {
-  // Step 1: Get logged in user from Clerk
-  const { userId: clerkId } = await auth();
+  const clerkId = await getSessionClerkId();
 
   if (!clerkId) {
     return {

@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { TransactionType } from "@/app/generated/prisma/client";
 import type { Prisma } from "@/app/generated/prisma/client";
 import { handleError } from "@/lib/utils";
-import { auth } from "@clerk/nextjs/server";
+import { getSessionClerkId } from "@/lib/auth/session";
 import { checkRateLimit, rateLimiters } from "@/lib/rate-limit";
 import { validate, validationError } from "@/lib/validators";
 
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { userId: clerkId } = await auth();
+    const clerkId = await getSessionClerkId();
 
     if (!clerkId) {
       return NextResponse.json(

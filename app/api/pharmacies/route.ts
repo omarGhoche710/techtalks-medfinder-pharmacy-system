@@ -1,11 +1,11 @@
-import { auth } from "@clerk/nextjs/server";
 import { createPharmacy } from "@/lib/database/queries/pharmacy";
 import { db } from "@/lib/db";
+import { getSessionClerkId } from "@/lib/auth/session";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { userId: clerkId } = await auth();
+    const clerkId = await getSessionClerkId();
 
     if (!clerkId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
