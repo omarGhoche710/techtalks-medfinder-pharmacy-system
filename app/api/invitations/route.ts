@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 
     const inviter = await db.user.findUnique({
       where: { id: invited_by },
-      select: { id: true, name: true, email: true },
+      select: { id: true, username: true },
     });
 
     if (!inviter) {
@@ -181,7 +181,7 @@ export async function POST(req: NextRequest) {
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:12px;border:1px solid #E5E7EB">
           <h2 style="color:#111827;font-size:20px;margin-bottom:8px">You're invited!</h2>
           <p style="color:#6B7280;font-size:15px;line-height:1.6;margin-bottom:24px">
-            <strong>${inviter.name ?? inviter.email}</strong> has invited you to join
+            <strong>${inviter.username}</strong> has invited you to join
             <strong>${pharmacy.name}</strong> on MedFinder as a <strong>${role}</strong>.
           </p>
           <a href="${inviteUrl}"

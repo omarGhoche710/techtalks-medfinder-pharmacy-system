@@ -1,0 +1,9 @@
+
+> medfinder-pharmacy-system@0.1.0 postinstall
+> prisma generate
+
+
+✔ Generated Prisma Client (7.8.0) to .\app\generated\prisma in 352ms
+
+
+up to date in 4m
