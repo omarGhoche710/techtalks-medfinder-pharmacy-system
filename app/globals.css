@@ -216,3 +216,198 @@
     z-index: 1000 !important;
   }
 }
+
+@layer components {
+  .pageContainer {
+    @apply flex min-h-screen items-start bg-sky-50 font-sans;
+  }
+
+  .registerContainer {
+    @apply flex-1 flex items-center justify-center p-8 min-h-screen;
+  }
+
+  .registerContainer > * {
+    @apply w-full max-w-[480px] border border-slate-200 rounded-[16px] bg-white;
+    box-shadow: none;
+  }
+
+  .header {
+    @apply text-2xl font-semibold text-slate-900;
+  }
+
+  .formDescription {
+    @apply text-sm text-slate-500;
+  }
+
+  .formGroup {
+    @apply flex flex-col gap-1;
+  }
+
+  .loginContainer,
+  .SignupContainer {
+    @apply flex flex-col gap-6;
+  }
+
+  .formLabel {
+    @apply text-sm font-medium text-slate-900;
+  }
+
+  .formInput {
+    @apply border border-slate-200 rounded-[8px] px-3 py-2 text-sm text-slate-900 transition-colors focus-visible:border-sky-600 focus-visible:ring-3 focus-visible:ring-sky-200 focus:outline-none;
+  }
+
+  .formInput:focus {
+    outline: none;
+  }
+
+  .formCheckboxGroup {
+    @apply flex items-center justify-between mt-[-0.25rem];
+  }
+
+  .formCheckbox {
+    @apply border-slate-200;
+  }
+
+  .formCheckbox[data-state="checked"] {
+    @apply bg-sky-600 border-sky-600;
+  }
+
+  .FieldLabel {
+    @apply text-xs text-slate-500;
+  }
+
+  .forgotPasswordLink {
+    @apply text-xs text-sky-600 no-underline;
+  }
+
+  .forgotPasswordLink:hover {
+    @apply underline;
+  }
+
+  .cardFooter {
+    @apply flex flex-col gap-3;
+  }
+
+  .btnPrimary {
+    @apply w-full px-4 py-3 text-sm font-semibold rounded-lg text-white bg-sky-600 transition duration-150 ease-in-out;
+  }
+
+  .btnPrimary:hover {
+    @apply bg-sky-700;
+  }
+
+  .btnPrimary:active {
+    transform: scale(0.98);
+  }
+
+  .socialLoginContainer {
+    @apply flex gap-2;
+  }
+
+  .btnSocial {
+    @apply flex-1 min-w-0 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-slate-900 bg-white border border-slate-200 rounded-lg transition-colors hover:bg-sky-50 hover:border-sky-100;
+  }
+
+  .authSwitch {
+    @apply flex items-center justify-center gap-1 mt-1;
+  }
+
+  .authSwitchText {
+    @apply text-sm text-slate-500;
+  }
+
+  .authSwitchLink {
+    @apply text-sky-600 font-semibold;
+  }
+
+  .termsGroup {
+    @apply flex items-center gap-2 mt-1;
+  }
+
+  .termsLink {
+    @apply text-sky-600 font-medium no-underline;
+  }
+
+  .termsLink:hover {
+    @apply underline;
+  }
+
+  .locationCard {
+    @apply mt-3 rounded-[12px] overflow-hidden border border-slate-200;
+  }
+
+  .locationCardMap {
+    @apply h-[220px] w-full;
+  }
+
+  .divider {
+    @apply flex items-center text-center text-slate-500 text-xs gap-3;
+  }
+
+  .divider::before,
+  .divider::after {
+    content: "";
+    @apply flex-1 h-px bg-slate-200;
+  }
+
+  .imageContainer {
+    @apply flex-1 flex-shrink-0 sticky top-6 self-start h-[calc(100vh-3rem)] items-center justify-center overflow-hidden m-6 rounded-[16px];
+  }
+
+  .imageContainer::before {
+    content: "";
+    @apply absolute inset-0 bg-cover bg-center z-0;
+    background-image: url('/auth-bg.jpg');
+  }
+
+  .imageContainer::after {
+    content: "";
+    @apply absolute inset-0 bg-[rgba(15,30,80,0.03)] z-1;
+  }
+
+  .heroContent {
+    @apply relative z-10 p-12 max-w-md text-white;
+  }
+
+  .heroLogo {
+    @apply flex items-center gap-2.5 mb-10;
+  }
+
+  .heroLogoIcon {
+    @apply w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm text-xl;
+  }
+
+  .heroLogoText {
+    @apply text-2xl font-bold tracking-tight;
+  }
+
+  .heroTitle {
+    @apply text-4xl font-extrabold leading-tight tracking-[-0.02em] mb-5;
+  }
+
+  .heroTitle span {
+    opacity: 0.85;
+  }
+
+  .heroBody {
+    @apply text-base leading-7 text-white/85 font-normal;
+  }
+
+  .heroDots {
+    @apply flex gap-2 mt-12;
+  }
+
+  .heroDot {
+    @apply w-2 h-2 rounded-full bg-white/35;
+  }
+
+  .heroDot:first-child {
+    @apply bg-white w-6 rounded-[4px];
+  }
+
+  @media (max-width: 900px) {
+    .imageContainer {
+      display: none;
+    }
+  }
+}
